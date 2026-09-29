@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { DEMO_ACTIONS } from "@/data/demo";
+import prisma from "@/lib/db";
 import {
   PriorityBadge,
   StatusBadge,
@@ -35,7 +35,8 @@ export default async function ActionCentrePage({
   const filterStatus = params.status as ActionStatus | undefined;
   const filterDept = params.dept;
 
-  let actions = [...DEMO_ACTIONS];
+  const allActions = await prisma.action.findMany();
+  let actions = [...allActions];
 
   // Apply filters
   if (filterPriority) {
@@ -54,7 +55,7 @@ export default async function ActionCentrePage({
   // Sort by priority then date
   const priorityOrder: Record<Priority, number> = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
   actions.sort((a, b) => {
-    const pd = priorityOrder[b.priority] - priorityOrder[a.priority];
+    const pd = priorityOrder[b.priority as Priority] - priorityOrder[a.priority as Priority];
     if (pd !== 0) return pd;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
@@ -64,13 +65,13 @@ export default async function ActionCentrePage({
     actions: actions.filter((a) => a.priority === priority),
   })).filter((g) => g.actions.length > 0);
 
-  const departments = [...new Set(DEMO_ACTIONS.map((a) => a.assignedDept).filter(Boolean))];
-  const modules = [...new Set(DEMO_ACTIONS.map((a) => a.module))];
+  const departments = [...new Set(allActions.map((a) => a.assignedDept).filter(Boolean))];
+  const modules = [...new Set(allActions.map((a) => a.module))];
   const statuses: ActionStatus[] = ["NEW", "REVIEWING", "ASSIGNED", "IN_PROGRESS", "BLOCKED", "RESOLVED"];
 
-  const criticalCount = DEMO_ACTIONS.filter((a) => a.priority === "CRITICAL").length;
-  const pendingApproval = DEMO_ACTIONS.filter((a) => a.aiGenerated && a.aiApproved === false).length;
-  const slaBreached = DEMO_ACTIONS.filter((a) => a.slaBreached).length;
+  const criticalCount = allActions.filter((a) => a.priority === "CRITICAL").length;
+  const pendingApproval = allActions.filter((a) => a.aiGenerated && a.aiApproved === false).length;
+  const slaBreached = allActions.filter((a) => a.slaBreached).length;
 
   return (
     <div>
@@ -166,7 +167,7 @@ export default async function ActionCentrePage({
               className="select"
               style={{ width: "auto", fontSize: "0.8125rem", padding: "4px 8px" }}
               value={filterDept ?? ""}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                 const url = new URL(window.location.href);
                 if (e.target.value) url.searchParams.set("dept", e.target.value);
                 else url.searchParams.delete("dept");
@@ -175,7 +176,7 @@ export default async function ActionCentrePage({
             >
               <option value="">All Departments</option>
               {departments.map((d) => (
-                <option key={d} value={d!}>{d}</option>
+                <option key={d as string} value={d! as string}>{d as string}</option>
               ))}
             </select>
 
@@ -184,7 +185,7 @@ export default async function ActionCentrePage({
               className="select"
               style={{ width: "auto", fontSize: "0.8125rem", padding: "4px 8px" }}
               value={filterStatus ?? ""}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                 const url = new URL(window.location.href);
                 if (e.target.value) url.searchParams.set("status", e.target.value);
                 else url.searchParams.delete("status");

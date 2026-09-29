@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { DEMO_ACTIONS, DEMO_FLOOD_ZONES } from "@/data/demo";
+import prisma from "@/lib/db";
+import { DEMO_FLOOD_ZONES } from "@/data/demo";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { CloudRain, Waves, AlertTriangle } from "lucide-react";
 
@@ -10,7 +11,10 @@ export default async function MonsoonShieldPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const monsoonActions = DEMO_ACTIONS.filter((a) => a.module === "MONSOONSHIELD");
+  const monsoonActions = await prisma.action.findMany({
+    where: { module: "MONSOONSHIELD" },
+    orderBy: { priority: "asc" },
+  });
 
   const criticalZones = DEMO_FLOOD_ZONES.filter((z) => z.riskLevel === "CRITICAL");
   const highZones = DEMO_FLOOD_ZONES.filter((z) => z.riskLevel === "HIGH");

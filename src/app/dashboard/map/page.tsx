@@ -2,12 +2,18 @@ import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import MapComponent from "@/components/map/MapComponent";
 import { Map as MapIcon } from "lucide-react";
+import prisma from "@/lib/db";
 
 export const metadata = { title: "District Map — CivicGrid" };
 
 export default async function MapPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const [assets, reports] = await Promise.all([
+    prisma.asset.findMany(),
+    prisma.citizenReport.findMany()
+  ]);
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
@@ -23,7 +29,7 @@ export default async function MapPage() {
         </div>
       </div>
       <div style={{ flex: 1, position: "relative" }}>
-        <MapComponent />
+        <MapComponent assets={assets} reports={reports} />
       </div>
     </div>
   );

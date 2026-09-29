@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { DEMO_HEALTH_INVENTORY, DEMO_ACTIONS, DEMO_RISKS } from "@/data/demo";
+import prisma from "@/lib/db";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { Heart, AlertTriangle, TrendingDown, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -11,19 +11,37 @@ export default async function SwasthyaGridPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const healthActions = DEMO_ACTIONS.filter((a) => a.module === "SWASTHYAGRID");
-  const healthRisks = DEMO_RISKS.filter((r) => r.module === "SWASTHYAGRID");
+  const [healthActions, phcAssets] = await Promise.all([
+    prisma.action.findMany({
+      where: { module: "SWASTHYAGRID" },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.asset.findMany({
+      where: { type: "PHC", isActive: true },
+      select: { id: true, name: true, ward: true, metadata: true },
+    }),
+  ]);
 
-  const criticalMeds = DEMO_HEALTH_INVENTORY.flatMap((phc) =>
-    phc.medicines.filter((m) => m.status === "CRITICAL").map((m) => ({
+  const healthInventory = phcAssets.map((asset) => {
+    const metadata = (asset.metadata as any) || {};
+    return {
+      phcId: asset.id,
+      phcName: asset.name,
+      ward: asset.ward || "Unknown",
+      medicines: Array.isArray(metadata.medicines) ? metadata.medicines : [],
+    };
+  });
+
+  const criticalMeds = healthInventory.flatMap((phc) =>
+    phc.medicines.filter((m: any) => m.status === "CRITICAL").map((m: any) => ({
       ...m,
       phcName: phc.phcName,
       ward: phc.ward,
     }))
   );
 
-  const warningMeds = DEMO_HEALTH_INVENTORY.flatMap((phc) =>
-    phc.medicines.filter((m) => m.status === "WARNING").map((m) => ({
+  const warningMeds = healthInventory.flatMap((phc) =>
+    phc.medicines.filter((m: any) => m.status === "WARNING").map((m: any) => ({
       ...m,
       phcName: phc.phcName,
       ward: phc.ward,
@@ -47,7 +65,7 @@ export default async function SwasthyaGridPage() {
       <div className="page-body">
         {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
-          <StatCard label="PHCs Monitored" value={DEMO_HEALTH_INVENTORY.length} color="#15803d" />
+          <StatCard label="PHCs Monitored" value={healthInventory.length} color="#15803d" />
           <StatCard label="Critical Stockouts" value={criticalMeds.length} color="#b91c1c" />
           <StatCard label="At-Risk Medicines" value={warningMeds.length} color="#b45309" />
           <StatCard label="Health Actions" value={healthActions.length} color="#1d4ed8" />
@@ -74,7 +92,7 @@ export default async function SwasthyaGridPage() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {criticalMeds.map((m, i) => (
+              {criticalMeds.map((m: any, i: number) => (
                 <div key={i} className="card" style={{ padding: "0.875rem", borderLeft: "3px solid #b91c1c" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
@@ -143,8 +161,8 @@ export default async function SwasthyaGridPage() {
               </tr>
             </thead>
             <tbody>
-              {DEMO_HEALTH_INVENTORY.flatMap((phc) =>
-                phc.medicines.map((m, i) => (
+              {healthInventory.flatMap((phc) =>
+                phc.medicines.map((m: any, i: number) => (
                   <tr key={`${phc.phcId}-${i}`}>
                     <td style={{ fontWeight: 600, fontSize: "0.875rem" }}>{phc.phcName}</td>
                     <td style={{ fontSize: "0.8125rem", color: "#64748b" }}>{phc.ward}</td>

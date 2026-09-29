@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { DEMO_REPORTS, DEMO_ACTIONS, DEMO_RISKS } from "@/data/demo";
+import prisma from "@/lib/db";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { formatRelativeTime } from "@/lib/utils";
 import { Building2, FileText, AlertTriangle } from "lucide-react";
@@ -12,10 +12,13 @@ export default async function CivicGridCorePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const coreActions = DEMO_ACTIONS.filter((a) => a.module === "CIVICGRID_CORE");
-  const coreRisks = DEMO_RISKS.filter((r) => r.module === "CIVICGRID_CORE");
+  const [reports, coreActions, coreRisks] = await Promise.all([
+    prisma.citizenReport.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.action.findMany({ where: { module: "CIVICGRID_CORE" }, orderBy: { createdAt: "desc" } }),
+    prisma.riskAssessment.findMany({ where: { module: "CIVICGRID_CORE" } })
+  ]);
 
-  const categoryStats = DEMO_REPORTS.reduce<Record<string, number>>((acc, r) => {
+  const categoryStats = reports.reduce<Record<string, number>>((acc, r) => {
     acc[r.category] = (acc[r.category] ?? 0) + 1;
     return acc;
   }, {});
@@ -37,7 +40,7 @@ export default async function CivicGridCorePage() {
       <div className="page-body">
         {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
-          <StatCard label="Total Reports" value={DEMO_REPORTS.length} color="#1d4ed8" />
+          <StatCard label="Total Reports" value={reports.length} color="#1d4ed8" />
           <StatCard label="Active Actions" value={coreActions.length} color="#c2410c" />
           <StatCard label="Resolved Today" value={2} color="#15803d" />
           <StatCard label="SLA Breached" value={coreActions.filter(a => a.slaBreached).length} color="#b91c1c" />
@@ -48,7 +51,7 @@ export default async function CivicGridCorePage() {
           <div>
             <SectionHeader
               title="Citizen Reports"
-              count={DEMO_REPORTS.length}
+              count={reports.length}
               action={
                 <Link
                   href="/dashboard/civicgrid/report"
@@ -59,7 +62,7 @@ export default async function CivicGridCorePage() {
               }
             />
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {DEMO_REPORTS.map((report) => (
+              {reports.map((report) => (
                 <div key={report.id} className="card" style={{ padding: "0.875rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                     <div style={{ display: "flex", gap: 6 }}>
@@ -127,7 +130,7 @@ export default async function CivicGridCorePage() {
                         overflow: "hidden",
                       }}>
                         <div style={{
-                          width: `${(count / DEMO_REPORTS.length) * 100}%`,
+                          width: `${reports.length > 0 ? (count / reports.length) * 100 : 0}%`,
                           height: "100%",
                           background: "#1d4ed8",
                           borderRadius: 3,

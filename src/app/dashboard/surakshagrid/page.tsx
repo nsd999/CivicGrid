@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { DEMO_ACTIONS, DEMO_RISKS, DEMO_ASSETS } from "@/data/demo";
+import prisma from "@/lib/db";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { Shield, AlertTriangle } from "lucide-react";
 
@@ -10,9 +10,19 @@ export default async function SurakshaGridPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const surakshaActions = DEMO_ACTIONS.filter((a) => a.module === "SURAKSHAGRID");
-  const surakshaRisks = DEMO_RISKS.filter((r) => r.module === "SURAKSHAGRID");
-  const bridges = DEMO_ASSETS.filter((a) => a.type === "BRIDGE");
+  const [surakshaActions, surakshaRisks, bridges] = await Promise.all([
+    prisma.action.findMany({
+      where: { module: "SURAKSHAGRID" },
+      orderBy: { priority: "asc" },
+    }),
+    prisma.riskAssessment.findMany({
+      where: { module: "SURAKSHAGRID" },
+      include: { asset: true },
+    }),
+    prisma.asset.findMany({
+      where: { type: "BRIDGE" },
+    }),
+  ]);
 
   return (
     <div>
@@ -46,12 +56,12 @@ export default async function SurakshaGridPage() {
                   <PriorityBadge priority={risk.priority} />
                 </div>
                 <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>
-                  {risk.assetId ? DEMO_ASSETS.find(a => a.id === risk.assetId)?.name ?? risk.ward : risk.ward}
+                  {risk.asset?.name ?? risk.ward}
                 </div>
                 <div style={{ fontSize: "0.8125rem", color: "#64748b", marginBottom: 8 }}>
                   Risk Score: <strong>{risk.priorityScore}</strong>/100 · {risk.populationAffected?.toLocaleString()} affected
                 </div>
-                {risk.factors.map((f) => (
+                {(risk.factors as any[]).map((f: any) => (
                   <div key={f.factor} style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -86,7 +96,8 @@ export default async function SurakshaGridPage() {
             <div>
               <SectionHeader title="Bridge Monitoring" count={bridges.length} />
               {bridges.map((bridge) => {
-                const age = bridge.metadata?.age_years as number ?? 0;
+                const meta = bridge.metadata as Record<string, any>;
+                const age = meta?.age_years as number ?? 0;
                 const riskLevel = age >= 40 ? "CRITICAL" : age >= 30 ? "HIGH" : "MEDIUM";
                 return (
                   <div key={bridge.id} className="card" style={{ padding: "1rem", marginBottom: 8 }}>
@@ -101,12 +112,12 @@ export default async function SurakshaGridPage() {
                       <div>
                         <span style={{ color: "#94a3b8" }}>Age: </span>
                         <span style={{ fontWeight: 600, color: age >= 40 ? "#b91c1c" : "#0f172a" }}>
-                          {bridge.metadata?.age_years as number} years
+                          {meta?.age_years as number} years
                         </span>
                       </div>
                       <div>
                         <span style={{ color: "#94a3b8" }}>Last inspected: </span>
-                        <span style={{ fontWeight: 600 }}>{bridge.metadata?.last_inspection as string}</span>
+                        <span style={{ fontWeight: 600 }}>{meta?.last_inspection as string}</span>
                       </div>
                     </div>
                   </div>

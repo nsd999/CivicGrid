@@ -1,12 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import {
-  DEMO_STATS,
-  DEMO_ACTIONS,
-  DEMO_RISKS,
-  DEMO_EVENTS,
-  DEMO_MISSIONS,
-} from "@/data/demo";
+import prisma from "@/lib/db";
 import {
   PriorityBadge,
   StatusBadge,
@@ -35,12 +29,36 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const criticalActions = DEMO_ACTIONS.filter((a) => a.priority === "CRITICAL");
-  const highActions = DEMO_ACTIONS.filter((a) => a.priority === "HIGH");
-  const activeMission = DEMO_MISSIONS[0];
+  const [
+    actions,
+    risks,
+    events,
+    missions,
+    criticalCount,
+    highCount,
+    pendingCount,
+    resolvedTodayCount
+  ] = await Promise.all([
+    prisma.action.findMany(),
+    prisma.riskAssessment.findMany({ orderBy: { priorityScore: "desc" } }),
+    prisma.event.findMany({ orderBy: { detectedAt: "desc" } }),
+    prisma.mission.findMany({ orderBy: { startedAt: "desc" }, take: 1 }),
+    prisma.action.count({ where: { priority: "CRITICAL", status: { not: "RESOLVED" } } }),
+    prisma.action.count({ where: { priority: "HIGH", status: { not: "RESOLVED" } } }),
+    prisma.action.count({ where: { status: "ASSIGNED" } }),
+    prisma.action.count({ 
+      where: { 
+        status: "RESOLVED", 
+        updatedAt: { gte: new Date(new Date().setHours(0,0,0,0)) } 
+      } 
+    })
+  ]);
+
+  const activeMission = missions[0];
 
   // Today's priorities — top 5 by priority
-  const todaysPriorities = [...DEMO_ACTIONS]
+  const todaysPriorities = [...actions]
+    .filter(a => a.status !== "RESOLVED")
     .sort((a, b) => {
       const order = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
       return order[b.priority] - order[a.priority];
@@ -125,31 +143,31 @@ export default async function DashboardPage() {
         }}>
           <StatCard
             label="Critical Issues"
-            value={DEMO_STATS.criticalIssues}
+            value={criticalCount}
             icon={<AlertTriangle size={22} />}
             color="#b91c1c"
           />
           <StatCard
             label="High Priority"
-            value={DEMO_STATS.highPriorityIssues}
+            value={highCount}
             icon={<Zap size={22} />}
             color="#c2410c"
           />
           <StatCard
             label="Active Risks"
-            value={DEMO_STATS.activeRisks}
+            value={risks.length}
             icon={<Shield size={22} />}
             color="#b45309"
           />
           <StatCard
             label="Pending Actions"
-            value={DEMO_STATS.pendingActions}
+            value={pendingCount}
             icon={<Activity size={22} />}
             color="#1d4ed8"
           />
           <StatCard
             label="Resolved Today"
-            value={DEMO_STATS.resolvedToday}
+            value={resolvedTodayCount}
             icon={<CheckCircle size={22} />}
             color="#15803d"
           />
@@ -278,10 +296,10 @@ export default async function DashboardPage() {
             <div>
               <SectionHeader
                 title="Active Risks"
-                count={DEMO_RISKS.length}
+                count={risks.length}
               />
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {DEMO_RISKS.map((risk) => (
+                {risks.slice(0, 5).map((risk) => (
                   <div key={risk.id} className="card" style={{ padding: "0.875rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div>
@@ -316,9 +334,9 @@ export default async function DashboardPage() {
 
             {/* Recent Events */}
             <div>
-              <SectionHeader title="Recent Events" count={DEMO_EVENTS.length} />
+              <SectionHeader title="Recent Events" count={events.length} />
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {DEMO_EVENTS.slice(0, 4).map((event) => (
+                {events.slice(0, 4).map((event) => (
                   <div key={event.id} className="card" style={{ padding: "0.75rem" }}>
                     <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
                       <PriorityBadge priority={event.severity} />

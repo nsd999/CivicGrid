@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
-import { DEMO_ASSETS, DEMO_REPORTS } from "@/data/demo";
 
-export default function MapComponent() {
+export default function MapComponent({ assets = [], reports = [] }: { assets?: any[], reports?: any[] }) {
   const [apiKey] = useState(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "");
 
   if (!apiKey) {
@@ -24,7 +23,7 @@ export default function MapComponent() {
           mapId="DEMO_MAP_ID"
         >
           {/* Infrastructure Assets */}
-          {DEMO_ASSETS.map((asset) => (
+          {assets.map((asset) => (
             <AdvancedMarker
               key={asset.id}
               position={{ lat: asset.latitude!, lng: asset.longitude! }}
@@ -39,7 +38,7 @@ export default function MapComponent() {
           ))}
 
           {/* Citizen Reports */}
-          {DEMO_REPORTS.map((report) => (
+          {reports.map((report) => (
             <AdvancedMarker
               key={report.id}
               position={{ lat: report.latitude!, lng: report.longitude! }}

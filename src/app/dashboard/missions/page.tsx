@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { DEMO_MISSIONS, DEMO_ACTIONS } from "@/data/demo";
+import prisma from "@/lib/db";
 import { PriorityBadge, StatusBadge, ModuleBadge, SectionHeader } from "@/components/ui";
 import { Flag, Users, CheckCircle, AlertTriangle } from "lucide-react";
 import type { Module } from "@/types";
@@ -11,9 +11,18 @@ export default async function MissionsPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const activeMission = DEMO_MISSIONS[0];
-  const missionModules = activeMission?.modules ?? [];
-  const missionActions = DEMO_ACTIONS.filter((a) => missionModules.includes(a.module as Module));
+  const activeMission = await prisma.mission.findFirst({
+    where: { status: "ACTIVE" },
+    orderBy: { startedAt: "desc" },
+  });
+
+  const missionModules = (activeMission?.modules as Module[]) ?? [];
+  const missionActions = activeMission
+    ? await prisma.action.findMany({
+        where: { module: { in: activeMission.modules as any[] } },
+        orderBy: { priority: "asc" },
+      })
+    : [];
 
   const criticalActions = missionActions.filter((a) => a.priority === "CRITICAL");
   const highActions = missionActions.filter((a) => a.priority === "HIGH");

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { DEMO_ACTIONS, DEMO_HEAT_WARDS } from "@/data/demo";
+import prisma from "@/lib/db";
+import { DEMO_HEAT_WARDS } from "@/data/demo";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { Thermometer, Users, Droplets, AlertTriangle } from "lucide-react";
 
@@ -10,7 +11,10 @@ export default async function HeatSafePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const heatActions = DEMO_ACTIONS.filter((a) => a.module === "HEATSAFE_INDIA");
+  const heatActions = await prisma.action.findMany({
+    where: { module: "HEATSAFE_INDIA" },
+    orderBy: { priority: "asc" },
+  });
   const criticalWards = DEMO_HEAT_WARDS.filter((w) => w.riskLevel === "CRITICAL");
 
   return (
