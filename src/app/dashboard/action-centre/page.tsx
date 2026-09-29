@@ -240,7 +240,7 @@ export default async function ActionCentrePage({
                   </span>
                 </div>
 
-                <ActionClientTable initialActions={grpActions} />
+                <ActionClientTable initialActions={grpActions as any} />
               </div>
             ))}
           </div>

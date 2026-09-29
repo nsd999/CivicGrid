@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
-import { DEMO_FLOOD_ZONES } from "@/data/demo";
+
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { CloudRain, Waves, AlertTriangle } from "lucide-react";
 
@@ -16,8 +16,13 @@ export default async function MonsoonShieldPage() {
     orderBy: { priority: "asc" },
   });
 
-  const criticalZones = DEMO_FLOOD_ZONES.filter((z) => z.riskLevel === "CRITICAL");
-  const highZones = DEMO_FLOOD_ZONES.filter((z) => z.riskLevel === "HIGH");
+  const monsoonRisks = await prisma.riskAssessment.findMany({
+    where: { module: "MONSOONSHIELD" },
+    orderBy: { priorityScore: "desc" },
+  });
+
+  const criticalZones = monsoonRisks.filter((z) => z.priority === "CRITICAL");
+  const highZones = monsoonRisks.filter((z) => z.priority === "HIGH");
 
   return (
     <div>
@@ -70,24 +75,31 @@ export default async function MonsoonShieldPage() {
           <div>
             <SectionHeader
               title="Flood Risk Zones"
-              count={DEMO_FLOOD_ZONES.length}
+              count={monsoonRisks.length}
               description="Historical + predictive flood exposure mapping"
             />
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {DEMO_FLOOD_ZONES.map((zone) => (
+              {monsoonRisks.map((zone) => {
+                const factors = zone.factors as any[];
+                const depthFactor = Array.isArray(factors) 
+                  ? factors.find((f: any) => f.factor === "rainfall_forecast")?.value || 45 
+                  : 45;
+                const affectedArea = 2.0;
+
+                return (
                 <div key={zone.id} className="card" style={{
                   padding: "1rem",
-                  borderLeft: `3px solid ${zone.riskLevel === "CRITICAL" ? "#b91c1c" : zone.riskLevel === "HIGH" ? "#c2410c" : "#b45309"}`,
+                  borderLeft: `3px solid ${zone.priority === "CRITICAL" ? "#b91c1c" : zone.priority === "HIGH" ? "#c2410c" : "#b45309"}`,
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
-                      <PriorityBadge priority={zone.riskLevel as "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"} />
-                      <div style={{ fontWeight: 700, color: "#0f172a", marginTop: 6 }}>{zone.name}</div>
-                      <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>{zone.ward}</div>
+                      <PriorityBadge priority={zone.priority} />
+                      <div style={{ fontWeight: 700, color: "#0f172a", marginTop: 6 }}>{zone.ward || "Unknown Location"}</div>
+                      <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>{zone.ward || "Unknown Ward"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ fontWeight: 700, fontSize: "1.25rem", color: "#0e7490", lineHeight: 1 }}>
-                        {zone.floodDepthCm}cm
+                        {depthFactor}cm
                       </div>
                       <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>max depth</div>
                     </div>
@@ -95,11 +107,11 @@ export default async function MonsoonShieldPage() {
                   <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: "0.8125rem" }}>
                     <div>
                       <span style={{ color: "#94a3b8" }}>Area affected: </span>
-                      <span style={{ fontWeight: 600 }}>{zone.affectedArea} km²</span>
+                      <span style={{ fontWeight: 600 }}>{affectedArea} km²</span>
                     </div>
                     <div>
                       <span style={{ color: "#94a3b8" }}>Past events: </span>
-                      <span style={{ fontWeight: 600 }}>{zone.historicalEvents}</span>
+                      <span style={{ fontWeight: 600 }}>{zone.recurrenceCount}</span>
                     </div>
                   </div>
 
@@ -113,10 +125,10 @@ export default async function MonsoonShieldPage() {
                     }}>
                       <div style={{
                         height: "100%",
-                        width: `${Math.min((zone.floodDepthCm / 80) * 100, 100)}%`,
+                        width: `${Math.min((Number(depthFactor) / 80) * 100, 100)}%`,
                         background:
-                          zone.riskLevel === "CRITICAL" ? "linear-gradient(90deg, #f97316, #b91c1c)"
-                          : zone.riskLevel === "HIGH" ? "#c2410c"
+                          zone.priority === "CRITICAL" ? "linear-gradient(90deg, #f97316, #b91c1c)"
+                          : zone.priority === "HIGH" ? "#c2410c"
                           : "#b45309",
                         borderRadius: 4,
                         transition: "width 0.3s",
@@ -124,7 +136,7 @@ export default async function MonsoonShieldPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
 

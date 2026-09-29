@@ -68,12 +68,12 @@ export default async function CivicGridCorePage() {
                     <div style={{ display: "flex", gap: 6 }}>
                       {report.severity && <PriorityBadge priority={report.severity} />}
                       <StatusBadge status={report.status} />
-                      {report.aiConfidence !== undefined && (
-                        <AIIndicator confidence={report.aiConfidence} />
+                      {report.aiConfidence !== undefined && report.aiConfidence !== null && (
+                        <AIIndicator confidence={report.aiConfidence as number} />
                       )}
                     </div>
                     <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                      {formatRelativeTime(report.createdAt)}
+                      {formatRelativeTime(report.createdAt.toISOString())}
                     </span>
                   </div>
                   <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#0f172a" }}>

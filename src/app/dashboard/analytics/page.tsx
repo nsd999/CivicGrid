@@ -2,12 +2,19 @@ import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { BarChart3 } from "lucide-react";
 import { StatCard } from "@/components/ui";
+import prisma from "@/lib/db";
 
 export const metadata = { title: "Analytics & Reports — CivicGrid" };
 
 export default async function AnalyticsPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const [totalReports, aiDecisions, criticalActions] = await Promise.all([
+    prisma.citizenReport.count(),
+    prisma.action.count({ where: { aiGenerated: true } }),
+    prisma.action.count({ where: { priority: "CRITICAL", status: "RESOLVED" } }),
+  ]);
 
   return (
     <div>
@@ -23,9 +30,9 @@ export default async function AnalyticsPage() {
 
       <div className="page-body">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-          <StatCard label="Total Citizen Reports" value={1423} color="#4f46e5" />
-          <StatCard label="AI Decisions Approved" value={892} color="#15803d" />
-          <StatCard label="Critical Risks Mitigated" value={145} color="#0e7490" />
+          <StatCard label="Total Citizen Reports" value={totalReports} color="#4f46e5" />
+          <StatCard label="AI Decisions Generated" value={aiDecisions} color="#15803d" />
+          <StatCard label="Critical Risks Mitigated" value={criticalActions} color="#0e7490" />
           <StatCard label="Avg Response Time" value="2.4h" color="#b45309" />
         </div>
 

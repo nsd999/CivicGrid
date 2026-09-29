@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
-import { DEMO_NOTIFICATIONS } from "@/data/demo";
+import prisma from "@/lib/db";
 
 export default async function DashboardLayout({
   children,
@@ -14,9 +14,9 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const unreadCount = DEMO_NOTIFICATIONS.filter(
-    (n) => !n.isRead && n.profileId === session.user.id
-  ).length;
+  const unreadCount = await prisma.notification.count({
+    where: { profileId: session.user.id, isRead: false },
+  });
 
   return (
     <div className="app-shell">

@@ -282,7 +282,7 @@ export default async function DashboardPage() {
                           ⚠ SLA Breached
                         </span>
                       )}
-                      <span>{formatRelativeTime(action.createdAt)}</span>
+                      <span>{formatRelativeTime(action.createdAt.toISOString())}</span>
                     </div>
                   </div>
                 </Link>
@@ -353,7 +353,7 @@ export default async function DashboardPage() {
                       justifyContent: "space-between",
                     }}>
                       <span>{event.source.replace(/_/g, " ")}</span>
-                      <span>{formatRelativeTime(event.detectedAt)}</span>
+                      <span>{formatRelativeTime(event.detectedAt.toISOString())}</span>
                     </div>
                   </div>
                 ))}

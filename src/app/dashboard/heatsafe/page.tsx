@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
-import { DEMO_HEAT_WARDS } from "@/data/demo";
+
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { Thermometer, Users, Droplets, AlertTriangle } from "lucide-react";
 
@@ -15,7 +15,11 @@ export default async function HeatSafePage() {
     where: { module: "HEATSAFE_INDIA" },
     orderBy: { priority: "asc" },
   });
-  const criticalWards = DEMO_HEAT_WARDS.filter((w) => w.riskLevel === "CRITICAL");
+  const heatRisks = await prisma.riskAssessment.findMany({
+    where: { module: "HEATSAFE_INDIA" },
+    orderBy: { priorityScore: "desc" },
+  });
+  const criticalWards = heatRisks.filter((w) => w.priority === "CRITICAL");
 
   return (
     <div>
@@ -62,7 +66,11 @@ export default async function HeatSafePage() {
           <StatCard label="Max Heat Index" value="42°C" color="#b91c1c" />
           <StatCard label="Critical Wards" value={criticalWards.length} color="#c2410c" />
           <StatCard label="Elderly at Risk" value="3,400+" color="#b45309" />
-          <StatCard label="Cooling Points Active" value={DEMO_HEAT_WARDS.reduce((s, w) => s + w.coolingPoints, 0)} color="#15803d" />
+          <StatCard label="Cooling Points Active" value={heatRisks.reduce((s, w) => {
+            const factors = w.factors as any[];
+            const coolingPts = Array.isArray(factors) ? (factors.find((f: any) => f.factor === "cooling_points")?.value || 0) : 0;
+            return s + Number(coolingPts);
+          }, 0)} color="#15803d" />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
@@ -71,25 +79,32 @@ export default async function HeatSafePage() {
             <SectionHeader
               title="Ward Heat Risk"
               description="Composite vulnerability scoring"
-              count={DEMO_HEAT_WARDS.length}
+              count={heatRisks.length}
             />
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {DEMO_HEAT_WARDS.map((ward) => (
-                <div key={ward.ward} className="card" style={{
+              {heatRisks.map((ward) => {
+                const factors = ward.factors as any[];
+                const heatIndex = Array.isArray(factors) ? (factors.find((f: any) => f.factor === "heat_index")?.value || 42) : 42;
+                const elderlyCount = ward.populationAffected || 0;
+                const waterAccess = Array.isArray(factors) ? (factors.find((f: any) => f.factor === "water_access")?.value || "LOW") : "LOW";
+                const coolingPoints = Array.isArray(factors) ? (factors.find((f: any) => f.factor === "cooling_points")?.value || 0) : 0;
+
+                return (
+                <div key={ward.id} className="card" style={{
                   padding: "1rem",
-                  borderLeft: `3px solid ${ward.riskLevel === "CRITICAL" ? "#b91c1c" : ward.riskLevel === "HIGH" ? "#c2410c" : "#b45309"}`,
+                  borderLeft: `3px solid ${ward.priority === "CRITICAL" ? "#b91c1c" : ward.priority === "HIGH" ? "#c2410c" : "#b45309"}`,
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
                       <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
-                        <PriorityBadge priority={ward.riskLevel as "CRITICAL" | "HIGH" | "MEDIUM"} />
+                        <PriorityBadge priority={ward.priority} />
                       </div>
-                      <div style={{ fontWeight: 700, color: "#0f172a" }}>{ward.name}</div>
-                      <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>{ward.ward}</div>
+                      <div style={{ fontWeight: 700, color: "#0f172a" }}>{ward.ward || "Unknown Ward"}</div>
+                      <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>{ward.ward || "Unknown Ward"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontWeight: 700, fontSize: "1.5rem", color: ward.heatIndex >= 42 ? "#b91c1c" : "#c2410c", lineHeight: 1 }}>
-                        {ward.heatIndex}°
+                      <div style={{ fontWeight: 700, fontSize: "1.5rem", color: Number(heatIndex) >= 42 ? "#b91c1c" : "#c2410c", lineHeight: 1 }}>
+                        {heatIndex}°
                       </div>
                       <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>heat index</div>
                     </div>
@@ -98,25 +113,25 @@ export default async function HeatSafePage() {
                   <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                     <div style={{ textAlign: "center", padding: "6px", background: "#f8fafc", borderRadius: 5 }}>
                       <div style={{ fontWeight: 600, color: "#0f172a", fontSize: "0.9375rem" }}>
-                        {ward.elderlyCount.toLocaleString()}
+                        {Number(elderlyCount).toLocaleString()}
                       </div>
                       <div style={{ fontSize: "0.7rem", color: "#64748b" }}>Elderly</div>
                     </div>
                     <div style={{ textAlign: "center", padding: "6px", background: "#f8fafc", borderRadius: 5 }}>
-                      <div style={{ fontWeight: 600, color: ward.waterAccess === "LOW" ? "#b91c1c" : "#0f172a", fontSize: "0.9375rem" }}>
-                        {ward.waterAccess}
+                      <div style={{ fontWeight: 600, color: waterAccess === "LOW" ? "#b91c1c" : "#0f172a", fontSize: "0.9375rem" }}>
+                        {waterAccess}
                       </div>
                       <div style={{ fontSize: "0.7rem", color: "#64748b" }}>Water access</div>
                     </div>
-                    <div style={{ textAlign: "center", padding: "6px", background: ward.coolingPoints === 0 ? "#fee2e2" : "#dcfce7", borderRadius: 5 }}>
-                      <div style={{ fontWeight: 600, color: ward.coolingPoints === 0 ? "#b91c1c" : "#15803d", fontSize: "0.9375rem" }}>
-                        {ward.coolingPoints}
+                    <div style={{ textAlign: "center", padding: "6px", background: Number(coolingPoints) === 0 ? "#fee2e2" : "#dcfce7", borderRadius: 5 }}>
+                      <div style={{ fontWeight: 600, color: Number(coolingPoints) === 0 ? "#b91c1c" : "#15803d", fontSize: "0.9375rem" }}>
+                        {coolingPoints}
                       </div>
                       <div style={{ fontSize: "0.7rem", color: "#64748b" }}>Cooling pts</div>
                     </div>
                   </div>
 
-                  {ward.coolingPoints === 0 && (
+                  {Number(coolingPoints) === 0 && (
                     <div style={{
                       marginTop: 8,
                       padding: "6px 10px",
@@ -140,8 +155,8 @@ export default async function HeatSafePage() {
                     }}>
                       <div style={{
                         height: "100%",
-                        width: `${Math.min(((ward.heatIndex - 28) / 20) * 100, 100)}%`,
-                        background: ward.heatIndex >= 42 ? "linear-gradient(90deg, #fb923c, #b91c1c)" : "linear-gradient(90deg, #fbbf24, #c2410c)",
+                        width: `${Math.min(((Number(heatIndex) - 28) / 20) * 100, 100)}%`,
+                        background: Number(heatIndex) >= 42 ? "linear-gradient(90deg, #fb923c, #b91c1c)" : "linear-gradient(90deg, #fbbf24, #c2410c)",
                         borderRadius: 3,
                       }} />
                     </div>
@@ -158,7 +173,7 @@ export default async function HeatSafePage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
 
