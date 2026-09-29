@@ -1,15 +1,18 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
+import { getWeatherData } from "@/lib/data-providers/owm";
 
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
-import { Thermometer, Users, Droplets, AlertTriangle } from "lucide-react";
+import { Thermometer, Users, Droplets, AlertTriangle, CloudSun } from "lucide-react";
 
 export const metadata = { title: "HeatSafe India — Heat Risk & Vulnerability" };
 
 export default async function HeatSafePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const weatherData = await getWeatherData("Hyderabad,IN");
 
   const heatActions = await prisma.action.findMany({
     where: { module: "HEATSAFE_INDIA" },
@@ -28,16 +31,26 @@ export default async function HeatSafePage() {
           <Thermometer size={24} color="#c2410c" />
           <div>
             <h1 style={{ margin: 0, color: "#c2410c" }}>HeatSafe India</h1>
-            <p style={{ margin: "2px 0 0", fontSize: "0.8125rem", color: "#64748b" }}>
-              Heat risk vulnerability mapping · Hyderabad District
-            </p>
+            <div style={{ margin: "2px 0 0", fontSize: "0.8125rem", color: "#64748b", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>Heat risk vulnerability mapping · Hyderabad District</span>
+              <span style={{ 
+                background: weatherData.provenance.status === "LIVE" ? "#dcfce7" : "#fef08a", 
+                color: weatherData.provenance.status === "LIVE" ? "#166534" : "#854d0e",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                fontSize: "0.7rem",
+                fontWeight: 600
+              }}>
+                {weatherData.provenance.source}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="page-body">
         {/* Heatwave alert */}
-        {criticalWards.length > 0 && (
+        {weatherData.feels_like >= 40 && (
           <div style={{
             background: "#fff7ed",
             border: "1px solid #fed7aa",
@@ -55,7 +68,7 @@ export default async function HeatSafePage() {
                 🌡️ IMD HEATWAVE DECLARATION — {criticalWards.length} Ward{criticalWards.length !== 1 ? "s" : ""} at CRITICAL risk
               </div>
               <div style={{ color: "#9a3412", fontSize: "0.8125rem", marginTop: 2 }}>
-                Heat index reaching 42°C. Vulnerable population protection measures must be activated immediately.
+                Heat index reaching {Math.round(weatherData.feels_like)}°C. Vulnerable population protection measures must be activated immediately.
               </div>
             </div>
           </div>
@@ -63,7 +76,7 @@ export default async function HeatSafePage() {
 
         {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
-          <StatCard label="Max Heat Index" value="42°C" color="#b91c1c" />
+          <StatCard label="Live Heat Index" value={`${Math.round(weatherData.feels_like)}°C`} color="#b91c1c" />
           <StatCard label="Critical Wards" value={criticalWards.length} color="#c2410c" />
           <StatCard label="Elderly at Risk" value="3,400+" color="#b45309" />
           <StatCard label="Cooling Points Active" value={heatRisks.reduce((s, w) => {

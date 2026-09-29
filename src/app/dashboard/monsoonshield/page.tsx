@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/db";
+import { getWeatherData } from "@/lib/data-providers/owm";
 
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { CloudRain, Waves, AlertTriangle } from "lucide-react";
@@ -10,6 +11,8 @@ export const metadata = { title: "MonsoonShield — Flood & Rainfall Intelligenc
 export default async function MonsoonShieldPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const weatherData = await getWeatherData("Hyderabad,IN");
 
   const monsoonActions = await prisma.action.findMany({
     where: { module: "MONSOONSHIELD" },
@@ -31,40 +34,74 @@ export default async function MonsoonShieldPage() {
           <CloudRain size={24} color="#0e7490" />
           <div>
             <h1 style={{ margin: 0, color: "#0e7490" }}>MonsoonShield</h1>
-            <p style={{ margin: "2px 0 0", fontSize: "0.8125rem", color: "#64748b" }}>
-              Flood risk intelligence · Rainfall forecasting · Hyderabad District
-            </p>
+            <div style={{ margin: "2px 0 0", fontSize: "0.8125rem", color: "#64748b", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>Flood risk intelligence · Rainfall forecasting · Hyderabad District</span>
+              <span style={{ 
+                background: weatherData.provenance.status === "LIVE" ? "#dcfce7" : "#fef08a", 
+                color: weatherData.provenance.status === "LIVE" ? "#166534" : "#854d0e",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                fontSize: "0.7rem",
+                fontWeight: 600
+              }}>
+                {weatherData.provenance.source}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="page-body">
-        {/* IMD Alert Banner */}
-        <div style={{
-          background: "#fee2e2",
-          border: "1px solid #fecaca",
-          borderLeft: "4px solid #b91c1c",
-          borderRadius: 8,
-          padding: "14px 16px",
-          marginBottom: "1.5rem",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-        }}>
-          <AlertTriangle size={22} color="#b91c1c" />
-          <div>
-            <div style={{ fontWeight: 700, color: "#b91c1c", fontSize: "0.9375rem" }}>
-              🔴 IMD RED ALERT — Heavy Rainfall Warning
-            </div>
-            <div style={{ color: "#991b1b", fontSize: "0.8125rem", marginTop: 2 }}>
-              65mm+ rainfall forecast over 24 hours · Issued: 29 Sep 2026 05:00 IST · Source: IMD Hyderabad
+        {/* Weather Alert Banner */}
+        {(weatherData.rain_1h ?? 0) > 10 || weatherData.description.includes("rain") ? (
+          <div style={{
+            background: "#fee2e2",
+            border: "1px solid #fecaca",
+            borderLeft: "4px solid #b91c1c",
+            borderRadius: 8,
+            padding: "14px 16px",
+            marginBottom: "1.5rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}>
+            <AlertTriangle size={22} color="#b91c1c" />
+            <div>
+              <div style={{ fontWeight: 700, color: "#b91c1c", fontSize: "0.9375rem" }}>
+                🔴 WEATHER ALERT — {weatherData.description.toUpperCase()}
+              </div>
+              <div style={{ color: "#991b1b", fontSize: "0.8125rem", marginTop: 2 }}>
+                Current live rainfall detected. Wind speed: {weatherData.wind_speed} m/s. Flood preparedness protocols should remain active.
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div style={{
+            background: "#f0fdf4",
+            border: "1px solid #bbf7d0",
+            borderLeft: "4px solid #16a34a",
+            borderRadius: 8,
+            padding: "14px 16px",
+            marginBottom: "1.5rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}>
+            <CloudRain size={22} color="#16a34a" />
+            <div>
+              <div style={{ fontWeight: 700, color: "#16a34a", fontSize: "0.9375rem" }}>
+                🟢 WEATHER STATUS — {weatherData.description.toUpperCase()}
+              </div>
+              <div style={{ color: "#166534", fontSize: "0.8125rem", marginTop: 2 }}>
+                No immediate heavy rainfall detected in live telemetry. Wind speed: {weatherData.wind_speed} m/s.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
-          <StatCard label="Forecast (24h)" value="65mm" color="#b91c1c" />
+          <StatCard label="Live Rain (1h)" value={weatherData.rain_1h ? `${weatherData.rain_1h}mm` : "0mm"} color="#0e7490" />
           <StatCard label="Critical Zones" value={criticalZones.length} color="#b91c1c" />
           <StatCard label="High-Risk Zones" value={highZones.length} color="#c2410c" />
           <StatCard label="Active Actions" value={monsoonActions.length} color="#0e7490" />
