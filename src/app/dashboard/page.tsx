@@ -174,12 +174,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Main Grid */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 380px",
-          gap: "1.5rem",
-          alignItems: "start",
-        }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
           {/* Today's Priorities */}
           <div>
             <SectionHeader

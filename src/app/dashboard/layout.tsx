@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
+import { DashboardShell } from "@/components/layout/shell";
 import prisma from "@/lib/db";
 
 export default async function DashboardLayout({
@@ -19,15 +20,16 @@ export default async function DashboardLayout({
   });
 
   return (
-    <div className="app-shell">
-      <Sidebar
-        userRole={session.user.role}
-        userName={session.user.name}
-        unreadNotifications={unreadCount}
-      />
-      <div className="main-content">
-        {children}
-      </div>
-    </div>
+    <DashboardShell
+      sidebar={
+        <Sidebar
+          userRole={session.user.role}
+          userName={session.user.name}
+          unreadNotifications={unreadCount}
+        />
+      }
+    >
+      {children}
+    </DashboardShell>
   );
 }
