@@ -113,20 +113,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               };
             }
           }
-        } catch {
-          // Database not available — fall through to demo users
-        }
-
-        // Demo user fallback
-        const demoUser = DEMO_USERS.find((u) => u.email === email);
-        if (demoUser && password === DEMO_PASSWORD) {
-          return {
-            id: demoUser.id,
-            email: demoUser.email,
-            name: demoUser.name,
-            role: demoUser.role,
-            department: demoUser.department,
-          };
+        } catch (error) {
+          console.error("Auth DB Error:", error);
+          // Return null on failure rather than fallback
+          return null;
         }
 
         return null;
