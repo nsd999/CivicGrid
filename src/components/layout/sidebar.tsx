@@ -47,7 +47,7 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
     section: "Operations",
     items: [
       { href: "/dashboard/missions", label: "Missions", icon: Flag },
-      { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
+      { href: "/dashboard/analytics", label: "Reports & Analytics", icon: BarChart3 },
       { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
     ],
   },
