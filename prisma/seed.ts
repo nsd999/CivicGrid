@@ -13,9 +13,27 @@ import {
 } from "../src/data/demo";
 
 const DEMO_USERS = [
-  { email: "collector@civicgrid.in", name: "District Collector", role: "DISTRICT_COLLECTOR" },
-  { email: "nodal@civicgrid.in", name: "Nodal Officer", role: "NODAL_OFFICER" },
-  { email: "citizen@civicgrid.in", name: "Citizen User", role: "CITIZEN" },
+  {
+    id: "demo-district-001",
+    email: "district@civicgrid.demo",
+    name: "District Officer",
+    role: "DISTRICT_OFFICER",
+    department: "District Administration",
+  },
+  {
+    id: "demo-officer-001",
+    email: "officer@civicgrid.demo",
+    name: "Department Officer",
+    role: "DEPARTMENT_OFFICER",
+    department: "GHMC",
+  },
+  {
+    id: "demo-citizen-001",
+    email: "citizen@civicgrid.demo",
+    name: "Citizen User",
+    role: "CITIZEN",
+    department: undefined,
+  },
 ];
 
 const prisma = new PrismaClient();
