@@ -28,6 +28,7 @@ export default async function ActionCentrePage({
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  if (session.user.role === "CITIZEN") redirect("/dashboard/civicgrid/report");
 
   const params = await searchParams;
   const filterPriority = params.priority as Priority | undefined;
@@ -35,7 +36,14 @@ export default async function ActionCentrePage({
   const filterStatus = params.status as ActionStatus | undefined;
   const filterDept = params.dept;
 
-  const allActions = await prisma.action.findMany();
+  const baseWhere =
+    session.user.role === "FIELD_WORKER"
+      ? { assignedToId: session.user.id }
+      : session.user.role === "DEPARTMENT_OFFICER"
+        ? { assignedDept: session.user.department ?? "__NONE__" }
+        : {};
+
+  const allActions = await prisma.action.findMany({ where: baseWhere });
   let actions = [...allActions];
 
   // Apply filters
