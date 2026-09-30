@@ -68,17 +68,16 @@ export default function LoginPage() {
           {/* Left — Branding */}
           <div style={{ padding: "2rem 0" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "2rem" }}>
-              <div style={{
-                width: 48,
-                height: 48,
-                background: "linear-gradient(135deg, #1d4ed8 0%, #0e7490 100%)",
-                borderRadius: 12,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                <span style={{ color: "white", fontSize: 20, fontWeight: 800 }}>CG</span>
-              </div>
+              <img 
+                src="/logo.jpg" 
+                alt="CivicGrid Logo" 
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  objectFit: "cover"
+                }} 
+              />
               <div>
                 <div style={{ fontWeight: 800, fontSize: "1.5rem", color: "#0f172a" }}>CivicGrid</div>
                 <div style={{ fontSize: "0.8125rem", color: "#64748b" }}>Public Intelligence Platform</div>

@@ -9,9 +9,11 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 48px", background: "white", borderBottom: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: "1.25rem", color: "#0f172a" }}>
-          <div style={{ background: "#0f172a", color: "white", width: 32, height: 32, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            CG
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="CivicGrid Logo" 
+            style={{ width: 32, height: 32, borderRadius: 6, objectFit: "cover" }}
+          />
           CivicGrid
         </div>
         <Link href="/login" style={{ padding: "8px 16px", background: "#0f172a", color: "white", textDecoration: "none", borderRadius: 6, fontWeight: 600, fontSize: "0.875rem" }}>

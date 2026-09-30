@@ -17,9 +17,11 @@ export function DashboardShell({
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white border-b sticky top-0 z-40">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br from-blue-700 to-cyan-700 text-white font-bold">
-            CG
-          </div>
+          <img 
+            src="/logo.jpg" 
+            alt="CivicGrid Logo" 
+            className="w-8 h-8 rounded-lg object-cover"
+          />
           <span className="font-bold text-slate-900">CivicGrid</span>
         </div>
         <button

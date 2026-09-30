@@ -78,18 +78,17 @@ export function Sidebar({ userRole, userName, unreadNotifications = 0 }: Sidebar
       <div style={{ padding: "20px 16px 16px" }}>
         <Link href="/dashboard" style={{ textDecoration: "none" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{
-              width: 32,
-              height: 32,
-              background: "linear-gradient(135deg, #1d4ed8 0%, #0e7490 100%)",
-              borderRadius: 8,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              <span style={{ color: "white", fontSize: 14, fontWeight: 800 }}>CG</span>
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="CivicGrid Logo" 
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                flexShrink: 0,
+                objectFit: "cover"
+              }} 
+            />
             <div>
               <div style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#0f172a", lineHeight: 1 }}>
                 CivicGrid

@@ -11,7 +11,12 @@ import {
   DEMO_NOTIFICATIONS,
   DEMO_HEALTH_INVENTORY,
 } from "../src/data/demo";
-import { DEMO_USERS } from "../src/lib/auth/config";
+
+const DEMO_USERS = [
+  { email: "collector@civicgrid.in", name: "District Collector", role: "DISTRICT_COLLECTOR" },
+  { email: "nodal@civicgrid.in", name: "Nodal Officer", role: "NODAL_OFFICER" },
+  { email: "citizen@civicgrid.in", name: "Citizen User", role: "CITIZEN" },
+];
 
 const prisma = new PrismaClient();
 const DEMO_PASSWORD = "demo1234";

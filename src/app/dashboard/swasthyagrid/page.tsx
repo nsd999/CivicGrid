@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { Heart, AlertTriangle, TrendingDown, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { getHealthInfrastructure } from "@/lib/data-providers/ogd";
 
 export const metadata = { title: "SwasthyaGrid — Public Health Intelligence" };
 
@@ -11,7 +12,7 @@ export default async function SwasthyaGridPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [healthActions, phcAssets] = await Promise.all([
+  const [healthActions, phcAssets, ogdHealthData] = await Promise.all([
     prisma.action.findMany({
       where: { module: "SWASTHYAGRID" },
       orderBy: { createdAt: "desc" },
@@ -20,15 +21,33 @@ export default async function SwasthyaGridPage() {
       where: { type: "PHC", isActive: true },
       select: { id: true, name: true, ward: true, metadata: true },
     }),
+    getHealthInfrastructure("Telangana"),
   ]);
 
-  const healthInventory = phcAssets.map((asset) => {
-    const metadata = (asset.metadata as any) || {};
+  // Merge OGD Data with internal PHC state
+  // We use OGD data as the primary source of truth for facilities, mapped into inventory format
+  const healthInventory = ogdHealthData.records.map((phc) => {
+    // Attempt to find existing DB asset to merge metadata (e.g., medicines)
+    const existingAsset = phcAssets.find(a => a.name.toLowerCase() === phc.name.toLowerCase());
+    
+    // In a real app, medicine inventory would come from a real-time HMIS (Health Management Info System) API.
+    // For now, we seed random inventory states based on bed capacity for demo if not found in DB.
+    const isCritical = phc.bed_capacity > 50;
+    
+    const defaultMedicines = [
+      { name: "Paracetamol 500mg", stockDays: isCritical ? 2 : 45, currentStock: isCritical ? 100 : 5000, dailyConsumption: 50, unit: "strips", status: isCritical ? "CRITICAL" : "SURPLUS" },
+      { name: "Amoxicillin 250mg", stockDays: 12, currentStock: 240, dailyConsumption: 20, unit: "bottles", status: "WARNING" }
+    ];
+
+    const medicines = existingAsset && existingAsset.metadata && (existingAsset.metadata as any).medicines
+      ? (existingAsset.metadata as any).medicines
+      : defaultMedicines;
+
     return {
-      phcId: asset.id,
-      phcName: asset.name,
-      ward: asset.ward || "Unknown",
-      medicines: Array.isArray(metadata.medicines) ? metadata.medicines : [],
+      phcId: phc.id,
+      phcName: phc.name,
+      ward: phc.district,
+      medicines: Array.isArray(medicines) ? medicines : [],
     };
   });
 
