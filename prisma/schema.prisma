@@ -125,7 +125,7 @@ model Profile {
   id          String   @id @default(uuid())
   email       String   @unique
   name        String
-  passwordHash String  @map("password_hash")
+  passwordHash String? @map("password_hash")
   role        UserRole @default(CITIZEN)
   department  String?
   phone       String?

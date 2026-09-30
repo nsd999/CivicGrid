@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const DEMO_CREDENTIALS = [
   { role: "Administrator", email: "admin@civicgrid.demo", password: "demo1234", description: "Full system access" },
@@ -18,21 +18,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    const result = await signIn("credentials", {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      redirect: false,
     });
 
     setLoading(false);
 
-    if (result?.error) {
+    if (error) {
       setError("Invalid email or password. Use the demo credentials below.");
     } else {
       router.push("/dashboard");
