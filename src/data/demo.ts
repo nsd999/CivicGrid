@@ -481,6 +481,36 @@ export const DEMO_EVENTS: Event[] = [
   },
 ];
 
+// Additional linkage events used to demonstrate the traceable response loop.
+DEMO_EVENTS.push(
+  {
+    id: "event-006",
+    title: "Pothole Near ZPHS — Road No. 45",
+    description: "Citizen report correlated with school proximity and repeated safety complaints.",
+    module: "CIVICGRID_CORE",
+    source: "CITIZEN_REPORT",
+    status: "ACTION_CREATED",
+    severity: "HIGH",
+    ward: "Ward 16",
+    metadata: { report_count: 1, affected_asset: "asset-s1", synthetic: true },
+    detectedAt: "2026-09-10T08:30:00Z",
+    createdAt: "2026-09-10T08:30:00Z",
+  },
+  {
+    id: "event-007",
+    title: "Water Supply Failure — KPHB Phase 4",
+    description: "Citizen report linked to emergency water-supply response.",
+    module: "SWASTHYAGRID",
+    source: "CITIZEN_REPORT",
+    status: "ACTION_CREATED",
+    severity: "HIGH",
+    ward: "Ward 24",
+    metadata: { affected_households: 500, synthetic: true },
+    detectedAt: "2026-09-27T07:00:00Z",
+    createdAt: "2026-09-27T07:00:00Z",
+  },
+);
+
 // ============================================================
 // MISSION (Mission Mode)
 // ============================================================
@@ -528,7 +558,7 @@ export const DEMO_STATS: DashboardStats = {
 export const DEMO_NOTIFICATIONS: Notification[] = [
   {
     id: "notif-001",
-    profileId: "user-1",
+    profileId: "demo-admin",
     type: "CRITICAL",
     title: "IMD Red Alert — Heavy Rainfall",
     message: "IMD has issued Red Warning for Hyderabad. 65mm+ rainfall forecast in 24 hours. Mission Mode activated.",
