@@ -1,19 +1,21 @@
 import type { UserRole } from "@/types";
 
 /**
- * CivicGrid frontend/demo authentication.
+ * Temporary authentication bypass.
  *
- * Supabase authentication is intentionally bypassed while the backend
- * is unavailable. This keeps the prototype usable as a frontend demo.
- * Replace this file with the real auth implementation when the backend
- * is restored.
+ * Supabase Auth is intentionally disabled while the service is unavailable.
+ * Database, AI, maps, reports, missions and other application services
+ * remain enabled and continue to use their normal implementations.
+ *
+ * Restore the Supabase-backed implementation here when authentication
+ * service is available again.
  */
 
 const DEMO_USER = {
   id: "demo-admin",
   email: "admin@civicgrid.demo",
   name: "CivicGrid Administrator",
-  role: "ADMIN" as UserRole,
+  role: "ADMINISTRATOR" as UserRole,
   department: "District Administration",
 };
 
@@ -22,5 +24,5 @@ export async function auth() {
 }
 
 export async function signOut() {
-  // No backend session in frontend demo mode.
+  // No Supabase call while authentication is disabled.
 }
