@@ -185,7 +185,7 @@ export default async function DashboardPage() {
               Inspect provenance <ArrowRight size={14} />
             </Link>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 6, marginTop: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 6, marginTop: 12 }}>
             {[
               ["Signal", events.length],
               ["Evidence", actions.filter((a) => a.eventId).length],
