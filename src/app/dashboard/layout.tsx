@@ -22,6 +22,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
+    <>
+      <div className="demo-banner" style={{ position: "fixed", top: 0, left: 0, right: 0 }}>
+        ⚠️ HACKATHON DEMO · Synthetic Hyderabad records are labelled for demonstration. Live-source badges are shown where applicable.
+      </div>
+      <div style={{ paddingTop: 30 }}>
     <DashboardShell
       sidebar={
         <Sidebar
@@ -33,5 +38,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     >
       {children}
     </DashboardShell>
+      </div>
+    </>
   );
 }
