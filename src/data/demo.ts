@@ -528,7 +528,7 @@ export const DEMO_STATS: DashboardStats = {
 export const DEMO_NOTIFICATIONS: Notification[] = [
   {
     id: "notif-001",
-    profileId: "demo-district-001",
+    profileId: "user-1",
     type: "CRITICAL",
     title: "IMD Red Alert — Heavy Rainfall",
     message: "IMD has issued Red Warning for Hyderabad. 65mm+ rainfall forecast in 24 hours. Mission Mode activated.",
@@ -550,7 +550,7 @@ export const DEMO_NOTIFICATIONS: Notification[] = [
   },
   {
     id: "notif-003",
-    profileId: "demo-officer-001",
+    profileId: "user-2",
     type: "HIGH",
     title: "AI Recommendation — PHC Stockout",
     message: "AI recommends emergency ORS redistribution from Kukatpally PHC to LB Nagar PHC. Awaiting your approval.",
