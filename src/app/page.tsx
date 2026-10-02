@@ -58,7 +58,7 @@ export default function LandingPage() {
       </nav>
 
       <main>
-        <section style={{ maxWidth: 1180, margin: "0 auto", padding: "72px 24px 48px", display: "grid", gridTemplateColumns: "1.15fr .85fr", gap: 40, alignItems: "center" }}>
+        <section className="landing-hero">
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "6px 10px", borderRadius: 999, background: "#eff6ff", border: "1px solid #dbeafe", color: "#1d4ed8", fontSize: ".75rem", fontWeight: 700 }}>
               <Radio size={14} /> EVENT → EVIDENCE → ACTION
@@ -110,7 +110,7 @@ export default function LandingPage() {
         <section style={{ background: "#0f172a", color: "white", padding: "42px 24px" }}>
           <div style={{ maxWidth: 1180, margin: "0 auto" }}>
             <div style={{ fontSize: ".7rem", color: "#93c5fd", fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" }}>Built for accountable public operations</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 18 }}>
+            <div className="landing-capabilities" style={{ marginTop: 18 }}>
               {[
                 [Map, "Universal GIS", "See reports, assets, risks and response zones together."],
                 [BrainCircuit, "AI Copilot", "Classify, summarise, extract evidence and recommend."],
