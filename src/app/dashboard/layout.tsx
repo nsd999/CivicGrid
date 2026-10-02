@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { DashboardShell } from "@/components/layout/shell";
 import prisma from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {
