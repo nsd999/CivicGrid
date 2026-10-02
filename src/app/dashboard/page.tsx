@@ -1,209 +1,393 @@
+import prisma from "@/lib/db";
+import {
+  PriorityBadge,
+  StatusBadge,
+  ModuleBadge,
+  StatCard,
+  SectionHeader,
+  AIIndicator,
+} from "@/components/ui";
+import { getModuleLabel, formatRelativeTime } from "@/lib/utils";
 import {
   AlertTriangle,
+  Zap,
+  Shield,
+  CheckCircle,
   Activity,
   ArrowRight,
-  CheckCircle,
-  Droplets,
-  Shield,
-  Sun,
-  Zap,
+  Flag,
 } from "lucide-react";
 import Link from "next/link";
 
-export const metadata = { title: "Home — CivicGrid" };
+export const metadata = {
+  title: "Home — CivicGrid",
+};
 
-const priorities = [
-  {
-    priority: "CRITICAL",
-    title: "Water pipeline pressure anomaly",
-    reason: "Detected abnormal pressure pattern in Ward 12.",
-    action: "Inspect the affected line and verify supply continuity.",
-    ward: "Ward 12",
-    dept: "Water Works",
-  },
-  {
-    priority: "HIGH",
-    title: "Drainage capacity alert",
-    reason: "Rainfall and drainage indicators show elevated flood exposure.",
-    action: "Clear priority drains and inspect known low-lying points.",
-    ward: "Ward 8",
-    dept: "GHMC",
-  },
-  {
-    priority: "HIGH",
-    title: "Heat-risk threshold crossed",
-    reason: "Heat index has moved above the prototype alert threshold.",
-    action: "Review cooling-centre readiness and public messaging.",
-    ward: "Ward 21",
-    dept: "Health",
-  },
-  {
-    priority: "MEDIUM",
-    title: "Street-light maintenance cluster",
-    reason: "Multiple citizen reports are grouped in the same area.",
-    action: "Schedule an inspection route for the field team.",
-    ward: "Ward 17",
-    dept: "Electrical",
-  },
-];
+export default async function DashboardPage() {
 
-const risks = [
-  ["Ward 12", "Water resilience", 86, "1,240"],
-  ["Ward 8", "Flood exposure", 78, "3,850"],
-  ["Ward 21", "Heat exposure", 72, "2,610"],
-];
+  const [
+    actions,
+    risks,
+    events,
+    missions,
+    criticalCount,
+    highCount,
+    pendingCount,
+    resolvedTodayCount
+  ] = await Promise.all([
+    prisma.action.findMany(),
+    prisma.riskAssessment.findMany({ orderBy: { priorityScore: "desc" } }),
+    prisma.event.findMany({ orderBy: { detectedAt: "desc" } }),
+    prisma.mission.findMany({ orderBy: { startedAt: "desc" }, take: 1 }),
+    prisma.action.count({ where: { priority: "CRITICAL", status: { not: "RESOLVED" } } }),
+    prisma.action.count({ where: { priority: "HIGH", status: { not: "RESOLVED" } } }),
+    prisma.action.count({ where: { status: "ASSIGNED" } }),
+    prisma.action.count({ 
+      where: { 
+        status: "RESOLVED", 
+        updatedAt: { gte: new Date(new Date().setHours(0,0,0,0)) } 
+      } 
+    })
+  ]);
 
-const events = [
-  ["Heavy rainfall advisory", "MonsoonShield", "HIGH"],
-  ["Water pressure anomaly", "CivicGrid Core", "CRITICAL"],
-  ["Heat index threshold crossed", "HeatSafe India", "HIGH"],
-  ["Drainage inspection requested", "MonsoonShield", "MEDIUM"],
-];
+  const activeMission = missions[0];
+  const displayName = "Administrator";
 
-const badge = (value: string) => ({
-  display: "inline-flex",
-  alignItems: "center",
-  padding: "3px 7px",
-  borderRadius: 5,
-  fontSize: "0.7rem",
-  fontWeight: 700,
-  background:
-    value === "CRITICAL" ? "#fee2e2" :
-    value === "HIGH" ? "#fff7ed" :
-    "#fefce8",
-  color:
-    value === "CRITICAL" ? "#b91c1c" :
-    value === "HIGH" ? "#c2410c" :
-    "#a16207",
-});
+  // Today's priorities — top 5 by priority
+  const todaysPriorities = [...actions]
+    .filter(a => a.status !== "RESOLVED")
+    .sort((a, b) => {
+      const order = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+      return order[b.priority] - order[a.priority];
+    })
+    .slice(0, 5);
 
-export default function DashboardPage() {
   return (
     <div>
+      {/* Page Header */}
       <div className="page-header">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 style={{ margin: 0, fontSize: "1.25rem" }}>Good morning, Administrator 👋</h1>
+            <h1 style={{ margin: 0, fontSize: "1.25rem" }}>
+              Good morning, {displayName} 👋
+            </h1>
             <p style={{ margin: "2px 0 0", fontSize: "0.8125rem", color: "#64748b" }}>
-              Frontend demonstration · Hyderabad District
+              {new Date().toLocaleDateString("en-IN", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}{" "}
+              · Hyderabad District
             </p>
           </div>
-          <span style={{ fontSize: "0.75rem", color: "#0369a1", background: "#e0f2fe", padding: "5px 10px", borderRadius: 5, fontWeight: 700 }}>
-            ● DEMO MODE
-          </span>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span style={{
+              fontSize: "0.75rem",
+              color: "#15803d",
+              background: "#dcfce7",
+              padding: "4px 10px",
+              borderRadius: 4,
+              fontWeight: 600,
+              border: "1px solid #bbf7d0",
+            }}>
+              ● AI Systems Online
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="page-body">
-        <div style={{ marginBottom: "1.5rem", background: "#eff6ff", border: "1px solid #bfdbfe", borderLeft: "4px solid #2563eb", borderRadius: 8, padding: "12px 14px", color: "#1e40af", fontSize: "0.8125rem" }}>
-          Supabase/backend services are temporarily bypassed. The dashboard below uses local frontend demo data so the UI remains usable.
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
-          {[
-            ["Critical Issues", "4", <AlertTriangle size={21} />, "#b91c1c"],
-            ["High Priority", "7", <Zap size={21} />, "#c2410c"],
-            ["Active Risks", "12", <Shield size={21} />, "#b45309"],
-            ["Pending Actions", "18", <Activity size={21} />, "#1d4ed8"],
-            ["Resolved Today", "24", <CheckCircle size={21} />, "#15803d"],
-          ].map(([label, value, icon, color]) => (
-            <div className="card" key={label as string} style={{ padding: "1rem" }}>
-              <div style={{ color: color as string, marginBottom: 8 }}>{icon}</div>
-              <div style={{ fontSize: "1.65rem", fontWeight: 800, color: "#0f172a" }}>{value}</div>
-              <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{label}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 360px", gap: "1.5rem", alignItems: "start" }}>
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", marginBottom: 12 }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: "1rem" }}>Today's Priorities</h2>
-                <p style={{ margin: "3px 0 0", fontSize: "0.75rem", color: "#64748b" }}>Prototype operational intelligence</p>
-              </div>
-              <Link href="/dashboard/action-centre" style={{ color: "#1d4ed8", fontSize: "0.8125rem", textDecoration: "none" }}>View all <ArrowRight size={13} style={{ verticalAlign: "middle" }} /></Link>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {priorities.map((item) => (
-                <div className="card" key={item.title} style={{ padding: "1rem", borderLeft: `3px solid ${item.priority === "CRITICAL" ? "#b91c1c" : "#c2410c"}` }}>
-                  <div style={{ display: "flex", gap: 6, marginBottom: 7 }}>
-                    <span style={badge(item.priority)}>{item.priority}</span>
+        {/* Active Mission Alert */}
+        {activeMission && (
+          <Link href="/dashboard/missions" style={{ textDecoration: "none", display: "block", marginBottom: "1.5rem" }}>
+            <div style={{
+              background: "#fff7ed",
+              border: "1px solid #fed7aa",
+              borderLeft: "4px solid #c2410c",
+              borderRadius: 8,
+              padding: "14px 16px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <Flag size={20} color="#c2410c" />
+                <div>
+                  <div style={{ fontWeight: 700, color: "#9a3412", fontSize: "0.9375rem" }}>
+                    🚨 MISSION ACTIVE: {activeMission.title}
                   </div>
-                  <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "0.92rem" }}>{item.title}</div>
-                  <div style={{ color: "#64748b", fontSize: "0.8rem", margin: "4px 0 8px" }}>{item.reason}</div>
-                  <div style={{ background: "#f0fdf4", border: "1px solid #dcfce7", color: "#166534", borderRadius: 5, padding: "7px 9px", fontSize: "0.78rem" }}>
-                    <strong>→ Recommended:</strong> {item.action}
+                  <div style={{ fontSize: "0.8125rem", color: "#c2410c", marginTop: 2 }}>
+                    {(activeMission.metadata as Record<string, unknown>)?.critical_actions as number} critical ·{" "}
+                    {(activeMission.metadata as Record<string, unknown>)?.high_actions as number} high priority ·{" "}
+                    {Array.isArray((activeMission.metadata as Record<string, unknown>)?.departments)
+                      ? ((activeMission.metadata as Record<string, unknown>)?.departments as string[]).length
+                      : 0} departments coordinating
                   </div>
-                  <div style={{ marginTop: 9, color: "#94a3b8", fontSize: "0.72rem" }}>📍 {item.ward} · {item.dept}</div>
                 </div>
-              ))}
+              </div>
+              <ArrowRight size={20} color="#c2410c" />
             </div>
-          </div>
+          </Link>
+        )}
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div>
-              <h2 style={{ margin: "0 0 10px", fontSize: "1rem" }}>Active Risks</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {risks.map(([ward, type, score, affected]) => (
-                  <div className="card" key={ward as string} style={{ padding: "0.85rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: "0.84rem" }}>{ward}</div>
-                        <div style={{ fontSize: "0.75rem", color: "#64748b" }}>{type}</div>
+        {/* Stats Row */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+          gap: "1rem",
+          marginBottom: "1.5rem",
+        }}>
+          <StatCard
+            label="Critical Issues"
+            value={criticalCount}
+            icon={<AlertTriangle size={22} />}
+            color="#b91c1c"
+          />
+          <StatCard
+            label="High Priority"
+            value={highCount}
+            icon={<Zap size={22} />}
+            color="#c2410c"
+          />
+          <StatCard
+            label="Active Risks"
+            value={risks.length}
+            icon={<Shield size={22} />}
+            color="#b45309"
+          />
+          <StatCard
+            label="Pending Actions"
+            value={pendingCount}
+            icon={<Activity size={22} />}
+            color="#1d4ed8"
+          />
+          <StatCard
+            label="Resolved Today"
+            value={resolvedTodayCount}
+            icon={<CheckCircle size={22} />}
+            color="#15803d"
+          />
+        </div>
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
+          {/* Today's Priorities */}
+          <div>
+            <SectionHeader
+              title="Today's Priorities"
+              description="What needs attention right now"
+              count={todaysPriorities.length}
+              action={
+                <Link
+                  href="/dashboard/action-centre"
+                  style={{
+                    fontSize: "0.8125rem",
+                    color: "#1d4ed8",
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontWeight: 500,
+                  }}
+                >
+                  View all <ArrowRight size={14} />
+                </Link>
+              }
+            />
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {todaysPriorities.map((action) => (
+                <Link
+                  key={action.id}
+                  href={`/dashboard/action-centre?id=${action.id}`}
+                  style={{ textDecoration: "none" }}
+                >
+                  <div
+                    className="card"
+                    style={{
+                      padding: "1rem",
+                      borderLeft: `3px solid ${
+                        action.priority === "CRITICAL"
+                          ? "#b91c1c"
+                          : action.priority === "HIGH"
+                          ? "#c2410c"
+                          : action.priority === "MEDIUM"
+                          ? "#b45309"
+                          : "#15803d"
+                      }`,
+                      transition: "box-shadow 120ms",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+                          <PriorityBadge priority={action.priority} />
+                          <ModuleBadge module={action.module} />
+                          <StatusBadge status={action.status} />
+                          {action.aiGenerated && (
+                            <AIIndicator confidence={undefined} />
+                          )}
+                        </div>
+                        <div style={{
+                          fontWeight: 600,
+                          fontSize: "0.9375rem",
+                          color: "#0f172a",
+                          marginBottom: 4,
+                        }}>
+                          {action.title}
+                        </div>
+                        <div style={{ fontSize: "0.8125rem", color: "#64748b", marginBottom: 6 }}>
+                          {action.reason}
+                        </div>
+                        <div style={{
+                          fontSize: "0.8125rem",
+                          background: "#f0fdf4",
+                          color: "#15803d",
+                          padding: "6px 10px",
+                          borderRadius: 5,
+                          border: "1px solid #dcfce7",
+                        }}>
+                          <span style={{ fontWeight: 600 }}>→ Recommended: </span>
+                          {action.recommendedAction}
+                        </div>
                       </div>
-                      <div style={{ fontWeight: 800, color: "#b45309" }}>{score}/100</div>
                     </div>
-                    <div style={{ marginTop: 6, fontSize: "0.72rem", color: "#94a3b8" }}>{affected} people potentially affected</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h2 style={{ margin: "0 0 10px", fontSize: "1rem" }}>Recent Events</h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                {events.map(([title, module, severity]) => (
-                  <div className="card" key={title as string} style={{ padding: "0.75rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
-                      <div style={{ fontSize: "0.78rem", fontWeight: 650 }}>{title}</div>
-                      <span style={badge(severity as string)}>{severity}</span>
+                    <div style={{
+                      marginTop: 10,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      fontSize: "0.75rem",
+                      color: "#94a3b8",
+                    }}>
+                      <span>📍 {action.ward} · {action.assignedDept}</span>
+                      {action.slaBreached && (
+                        <span style={{
+                          color: "#b91c1c",
+                          fontWeight: 600,
+                          background: "#fee2e2",
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                        }}>
+                          ⚠ SLA Breached
+                        </span>
+                      )}
+                      <span>{formatRelativeTime(action.createdAt.toISOString())}</span>
                     </div>
-                    <div style={{ marginTop: 3, fontSize: "0.68rem", color: "#94a3b8" }}>{module}</div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="card" style={{ padding: "1rem" }}>
-              <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 9 }}>Quick Actions</div>
-              {[
-                ["📝", "Submit Citizen Report", "/dashboard/civicgrid/report"],
-                ["🗺️", "View District Map", "/dashboard/map"],
-                ["🚨", "Mission Control", "/dashboard/missions"],
-                ["⚙️", "AI Provider Health", "/dashboard/admin/ai-health"],
-              ].map(([icon, label, href]) => (
-                <Link key={href} href={href} className="nav-item" style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", color: "#1d4ed8", textDecoration: "none", fontSize: "0.8rem", borderRadius: 5 }}>
-                  <span>{icon}</span><span>{label}</span><ArrowRight size={13} style={{ marginLeft: "auto", color: "#cbd5e1" }} />
                 </Link>
               ))}
             </div>
           </div>
-        </div>
 
-        <div style={{ marginTop: "1.5rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-          {[
-            ["CivicGrid Core", "Infrastructure intelligence", <Zap size={18} />],
-            ["SwasthyaGrid", "Public health intelligence", <Activity size={18} />],
-            ["MonsoonShield", "Flood & drainage intelligence", <Droplets size={18} />],
-            ["HeatSafe India", "Extreme heat monitoring", <Sun size={18} />],
-          ].map(([name, desc, icon]) => (
-            <div className="card" key={name as string} style={{ padding: "0.9rem", display: "flex", gap: 9, alignItems: "center" }}>
-              <div style={{ color: "#2563eb" }}>{icon}</div>
-              <div><div style={{ fontWeight: 700, fontSize: "0.8rem" }}>{name}</div><div style={{ color: "#94a3b8", fontSize: "0.7rem" }}>{desc}</div></div>
+          {/* Right Column */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            {/* Active Risks */}
+            <div>
+              <SectionHeader
+                title="Active Risks"
+                count={risks.length}
+              />
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {risks.slice(0, 5).map((risk) => (
+                  <div key={risk.id} className="card" style={{ padding: "0.875rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div>
+                        <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                          <PriorityBadge priority={risk.priority} />
+                          <ModuleBadge module={risk.module} />
+                        </div>
+                        <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#0f172a" }}>
+                          {risk.ward}
+                        </div>
+                        <div style={{ fontSize: "0.8125rem", color: "#64748b", marginTop: 2 }}>
+                          Score: {risk.priorityScore}/100 ·{" "}
+                          {risk.populationAffected?.toLocaleString()} affected
+                        </div>
+                      </div>
+                    </div>
+                    {risk.aiExplanation && (
+                      <div style={{
+                        marginTop: 8,
+                        fontSize: "0.8125rem",
+                        color: "#475569",
+                        borderTop: "1px solid #f1f5f9",
+                        paddingTop: 8,
+                      }}>
+                        {risk.aiExplanation.slice(0, 120)}...
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+
+            {/* Recent Events */}
+            <div>
+              <SectionHeader title="Recent Events" count={events.length} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {events.slice(0, 4).map((event) => (
+                  <div key={event.id} className="card" style={{ padding: "0.75rem" }}>
+                    <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                      <PriorityBadge priority={event.severity} />
+                      <ModuleBadge module={event.module} />
+                    </div>
+                    <div style={{ fontWeight: 600, fontSize: "0.8125rem", color: "#0f172a" }}>
+                      {event.title}
+                    </div>
+                    <div style={{
+                      fontSize: "0.75rem",
+                      color: "#94a3b8",
+                      marginTop: 4,
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}>
+                      <span>{event.source.replace(/_/g, " ")}</span>
+                      <span>{formatRelativeTime(event.detectedAt.toISOString())}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="card" style={{ padding: "1rem" }}>
+              <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#0f172a", marginBottom: 10 }}>
+                Quick Actions
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[
+                  { label: "Submit Citizen Report", href: "/dashboard/civicgrid/report", icon: "📝" },
+                  { label: "View District Map", href: "/dashboard/map", icon: "🗺️" },
+                  { label: "Mission Control", href: "/dashboard/missions", icon: "🚨" },
+                  { label: "AI Provider Health", href: "/dashboard/admin/ai-health", icon: "⚙️" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "8px 10px",
+                      borderRadius: 6,
+                      fontSize: "0.875rem",
+                      color: "#1d4ed8",
+                      textDecoration: "none",
+                      transition: "background 100ms",
+                    }}
+                    className="nav-item"
+                  >
+                    <span>{link.icon}</span>
+                    <span>{link.label}</span>
+                    <ArrowRight size={14} style={{ marginLeft: "auto", color: "#cbd5e1" }} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
