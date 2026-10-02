@@ -17,14 +17,14 @@ const DEMO_USERS = [
     id: "user-1",
     email: "collector@civicgrid.in",
     name: "District Collector",
-    role: "DISTRICT_COLLECTOR" as any,
+    role: "DISTRICT_OFFICER" as any,
     department: "Revenue",
   },
   {
     id: "user-2",
     email: "nodal@civicgrid.in",
     name: "Nodal Officer",
-    role: "NODAL_OFFICER" as any,
+    role: "DEPARTMENT_OFFICER" as any,
     department: "GHMC",
   },
   {
