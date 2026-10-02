@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // Reduce bundle size — exclude server-only packages from client
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
 
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./node_modules/.prisma/client/**/*"],
+    "/*": ["./node_modules/.prisma/client/**/*"],
+  },
+
   typescript: {
     ignoreBuildErrors: false,
   },
