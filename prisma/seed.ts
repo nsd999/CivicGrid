@@ -14,6 +14,13 @@ import {
 
 const DEMO_USERS = [
   {
+    id: "demo-admin",
+    email: "admin@civicgrid.demo",
+    name: "CivicGrid Administrator",
+    role: "ADMINISTRATOR" as any,
+    department: "District Administration",
+  },
+  {
     id: "user-1",
     email: "collector@civicgrid.in",
     name: "District Collector",
@@ -152,6 +159,20 @@ async function main() {
         source: event.source as any,
         status: event.status as any,
         severity: event.severity as any,
+        locationId:
+          event.id === "event-001" ? "loc-001" :
+          event.id === "event-002" ? "loc-008" :
+          event.id === "event-003" ? "loc-005" :
+          event.id === "event-004" ? "loc-001" :
+          event.id === "event-005" ? "loc-007" :
+          event.id === "event-006" ? "loc-001" :
+          event.id === "event-007" ? "loc-006" :
+          null,
+        reportId:
+          event.id === "event-004" ? "report-002" :
+          event.id === "event-006" ? "report-001" :
+          event.id === "event-007" ? "report-005" :
+          null,
         ward: event.ward,
         metadata: event.metadata as any,
         detectedAt: new Date(event.detectedAt),
@@ -175,6 +196,15 @@ async function main() {
         status: action.status as any,
         locationId: action.locationId,
         ward: action.ward,
+        eventId:
+          action.id === "action-001" ? "event-004" :
+          action.id === "action-002" ? "event-003" :
+          action.id === "action-003" ? "event-005" :
+          action.id === "action-004" ? "event-001" :
+          action.id === "action-005" ? "event-002" :
+          action.id === "action-006" ? "event-006" :
+          action.id === "action-007" ? "event-007" :
+          null,
         reason: action.reason,
         recommendedAction: action.recommendedAction,
         assignedDept: action.assignedDept,
@@ -198,6 +228,18 @@ async function main() {
         id: risk.id,
         module: risk.module as any,
         assetId: risk.assetId,
+        eventId:
+          risk.id === "risk-001" ? "event-001" :
+          risk.id === "risk-002" ? "event-002" :
+          risk.id === "risk-003" ? "event-005" :
+          risk.id === "risk-004" ? "event-003" :
+          null,
+        locationId:
+          risk.ward === "Ward 16" ? "loc-001" :
+          risk.ward === "Ward 18" ? "loc-008" :
+          risk.ward === "Ward 59" ? "loc-007" :
+          risk.ward === "Ward 61" ? "loc-005" :
+          null,
         ward: risk.ward,
         priority: risk.priority as any,
         priorityScore: risk.priorityScore,
