@@ -1,40 +1,26 @@
-import { createClient } from "@/lib/supabase/server";
-import prisma from "@/lib/db";
 import type { UserRole } from "@/types";
 
+/**
+ * CivicGrid frontend/demo authentication.
+ *
+ * Supabase authentication is intentionally bypassed while the backend
+ * is unavailable. This keeps the prototype usable as a frontend demo.
+ * Replace this file with the real auth implementation when the backend
+ * is restored.
+ */
+
+const DEMO_USER = {
+  id: "demo-admin",
+  email: "admin@civicgrid.demo",
+  name: "CivicGrid Administrator",
+  role: "ADMIN" as UserRole,
+  department: "District Administration",
+};
+
 export async function auth() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error || !user) {
-    return null;
-  }
-
-  try {
-    const profile = await prisma.profile.findUnique({
-      where: { id: user.id },
-    });
-
-    if (!profile || !profile.isActive) {
-      return null;
-    }
-
-    return {
-      user: {
-        id: profile.id,
-        email: profile.email,
-        name: profile.name,
-        role: profile.role as UserRole,
-        department: profile.department ?? undefined,
-      }
-    };
-  } catch (err) {
-    console.error("Auth DB Error:", err);
-    return null;
-  }
+  return { user: DEMO_USER };
 }
 
 export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  // No backend session in frontend demo mode.
 }
