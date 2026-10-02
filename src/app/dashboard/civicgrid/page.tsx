@@ -42,7 +42,11 @@ export default async function CivicGridCorePage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
           <StatCard label="Total Reports" value={reports.length} color="#1d4ed8" />
           <StatCard label="Active Actions" value={coreActions.length} color="#c2410c" />
-          <StatCard label="Resolved Today" value={2} color="#15803d" />
+          <StatCard
+            label="Resolved Today"
+            value={coreActions.filter((a) => a.status === "RESOLVED" || a.status === "VERIFIED" || a.status === "CLOSED").length}
+            color="#15803d"
+          />
           <StatCard label="SLA Breached" value={coreActions.filter(a => a.slaBreached).length} color="#b91c1c" />
         </div>
 
