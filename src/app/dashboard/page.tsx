@@ -170,6 +170,39 @@ export default async function DashboardPage() {
           />
         </div>
 
+        {/* Traceability strip */}
+        <div className="card" style={{ marginBottom: "1.5rem", padding: "1rem 1.1rem", background: "#f8fbff", borderColor: "#dbeafe" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: ".7rem", color: "#1d4ed8", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".08em" }}>
+                Traceable civic response loop
+              </div>
+              <div style={{ marginTop: 3, fontSize: ".82rem", color: "#475569" }}>
+                Every operational item is designed to move from signal → evidence → risk → decision → action → verification.
+              </div>
+            </div>
+            <Link href="/dashboard/analytics" className="btn btn-secondary btn-sm" style={{ color: "#1d4ed8" }}>
+              Inspect provenance <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 6, marginTop: 12 }}>
+            {[
+              ["Signal", events.length],
+              ["Evidence", actions.filter((a) => a.eventId).length],
+              ["Risk", risks.length],
+              ["Decision", actions.filter((a) => a.aiGenerated).length],
+              ["Action", actions.filter((a) => a.status !== "NEW").length],
+              ["Verified", actions.filter((a) => ["VERIFIED", "CLOSED"].includes(a.status)).length],
+            ].map(([label, value], i) => (
+              <div key={label} style={{ padding: "8px 9px", borderRadius: 7, background: "white", border: "1px solid #e2e8f0" }}>
+                <div style={{ fontSize: ".68rem", color: "#94a3b8", fontWeight: 700 }}>{String(i + 1).padStart(2, "0")}</div>
+                <div style={{ fontSize: ".78rem", fontWeight: 700, color: "#334155", marginTop: 2 }}>{label}</div>
+                <div style={{ fontSize: "1.05rem", fontWeight: 800, color: "#0f172a", marginTop: 2 }}>{value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
           {/* Today's Priorities */}
