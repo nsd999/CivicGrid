@@ -78,7 +78,7 @@ export default async function DashboardPage() {
               fontWeight: 600,
               border: "1px solid #bbf7d0",
             }}>
-              ● "+(mode === "DATABASE" ? "Live Data Connected" : "Demo Data Fallback")+"
+              ● {mode === "DATABASE" ? "Live Data Connected" : "Demo Data Fallback"}
             </span>
           </div>
         </div>
