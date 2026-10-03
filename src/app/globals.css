@@ -934,9 +934,10 @@ button, .btn, .nav-item, .mobile-bottom-nav a, .mobile-bottom-nav button {
 }
 
 @media (min-width: 768px) {
+  /* Sidebar remains fixed; keep its wrapper out of normal document flow. */
   .dashboard-sidebar-shell {
-    width: var(--sidebar-width);
-    flex: 0 0 var(--sidebar-width);
+    width: 0;
+    flex: 0 0 0;
   }
 
   .dashboard-sidebar-shell > .sidebar { transform: translateX(0); }
