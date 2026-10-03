@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/db";
+import { getActions, getRisks } from "@/lib/resilient-data";
 import { getWeatherData } from "@/lib/data-providers/owm";
 
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
@@ -10,18 +10,15 @@ export const metadata = { title: "HeatSafe India — Heat Risk & Vulnerability" 
 
 export default async function HeatSafePage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
 
   const weatherData = await getWeatherData("Hyderabad,IN");
 
-  const heatActions = await prisma.action.findMany({
-    where: { module: "HEATSAFE_INDIA" },
-    orderBy: { priority: "asc" },
-  });
-  const heatRisks = await prisma.riskAssessment.findMany({
-    where: { module: "HEATSAFE_INDIA" },
-    orderBy: { priorityScore: "desc" },
-  });
+  const [actionsResult, risksResult] = await Promise.all([
+    getActions({ where: { module: "HEATSAFE_INDIA" }, orderBy: { priority: "asc" } }),
+    getRisks({ where: { module: "HEATSAFE_INDIA" }, orderBy: { priorityScore: "desc" } }),
+  ]);
+  const heatActions = actionsResult.data;
+  const heatRisks = risksResult.data;
   const criticalWards = heatRisks.filter((w) => w.priority === "CRITICAL");
 
   return (
