@@ -35,7 +35,7 @@ export default function LandingPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", color: "#0f172a", fontFamily: "system-ui, sans-serif" }}>
       <div className="demo-banner">
-        ⚠️ HACKATHON PROTOTYPE · Synthetic Hyderabad data is clearly labelled inside the platform · Not an official government application
+        CivicGrid · Learning + Public Intelligence Platform · Built for civic awareness, governance learning and civil-services / civic-exam preparation · Not an official government application
       </div>
 
       <nav style={{
@@ -155,7 +155,7 @@ export default function LandingPage() {
               <div>
                 <h3 style={{ margin: 0 }}>Evidence-first by design</h3>
                 <p style={{ margin: "7px 0 0", fontSize: ".84rem", color: "#475569", maxWidth: 900 }}>
-                  Every dashboard number can be treated as a claim with provenance: source, collection time, live/synthetic status, calculation or model context, human approval and eventual outcome. Synthetic Hyderabad records are explicitly labelled for the hackathon.
+                  Every dashboard number can be treated as a claim with provenance: source, collection time, live/demo status, calculation or model context, human approval and eventual outcome. This keeps CivicGrid useful for both long-term learning and real-world civic operations.
                 </p>
               </div>
             </div>
@@ -164,7 +164,7 @@ export default function LandingPage() {
       </main>
 
       <footer style={{ padding: "28px 24px", borderTop: "1px solid #e2e8f0", textAlign: "center", color: "#94a3b8", fontSize: ".75rem" }}>
-        CivicGrid · Hackathon prototype · Not an official Government of India application
+        CivicGrid · Civic intelligence and governance learning platform · Not an official Government of India application
       </footer>
     </div>
   );
