@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/db";
+import { getMissions, getActions } from "@/lib/resilient-data";
 import { PriorityBadge, StatusBadge, ModuleBadge, SectionHeader } from "@/components/ui";
 import { Flag, Users, CheckCircle, AlertTriangle } from "lucide-react";
 import type { Module } from "@/types";
@@ -9,19 +9,14 @@ export const metadata = { title: "Missions — CivicGrid" };
 
 export default async function MissionsPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
 
-  const activeMission = await prisma.mission.findFirst({
-    where: { status: "ACTIVE" },
-    orderBy: { startedAt: "desc" },
-  });
+  const missionResult = await getMissions({ where: { status: "ACTIVE" }, orderBy: { startedAt: "desc" }, take: 1 });
+  const activeMission = missionResult.data[0] ?? null;
 
   const missionModules = (activeMission?.modules as Module[]) ?? [];
+  const allActionsResult = await getActions();
   const missionActions = activeMission
-    ? await prisma.action.findMany({
-        where: { module: { in: activeMission.modules as any[] } },
-        orderBy: { priority: "asc" },
-      })
+    ? allActionsResult.data.filter((a: any) => (activeMission.modules as any[]).includes(a.module))
     : [];
 
   const criticalActions = missionActions.filter((a) => a.priority === "CRITICAL");
