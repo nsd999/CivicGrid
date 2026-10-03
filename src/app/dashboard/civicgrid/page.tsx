@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/db";
+import { getReports, getActions, getRisks } from "@/lib/resilient-data";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { formatRelativeTime } from "@/lib/utils";
 import { Building2, FileText, AlertTriangle } from "lucide-react";
@@ -12,11 +12,14 @@ export default async function CivicGridCorePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [reports, coreActions, coreRisks] = await Promise.all([
-    prisma.citizenReport.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.action.findMany({ where: { module: "CIVICGRID_CORE" }, orderBy: { createdAt: "desc" } }),
-    prisma.riskAssessment.findMany({ where: { module: "CIVICGRID_CORE" } })
+  const [reportsResult, actionsResult, risksResult] = await Promise.all([
+    getReports({ orderBy: { createdAt: "desc" } }),
+    getActions({ where: { module: "CIVICGRID_CORE" }, orderBy: { createdAt: "desc" } }),
+    getRisks({ where: { module: "CIVICGRID_CORE" } }),
   ]);
+  const reports = reportsResult.data;
+  const coreActions = actionsResult.data;
+  const coreRisks = risksResult.data;
 
   const categoryStats = reports.reduce<Record<string, number>>((acc, r) => {
     acc[r.category] = (acc[r.category] ?? 0) + 1;
@@ -77,7 +80,7 @@ export default async function CivicGridCorePage() {
                       )}
                     </div>
                     <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                      {formatRelativeTime(report.createdAt.toISOString())}
+                      {formatRelativeTime(new Date(report.createdAt).toISOString())}
                     </span>
                   </div>
                   <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#0f172a" }}>
