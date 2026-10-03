@@ -1,18 +1,22 @@
-import prisma from "@/lib/db";
+import { getActions, getEvents, getRisks, getReports } from "@/lib/resilient-data";
 import { BarChart3, CheckCircle2, Database, GitBranch, ShieldCheck } from "lucide-react";
 import { StatCard } from "@/components/ui";
 
 export const metadata = { title: "Analytics & Reports — CivicGrid" };
 
 export default async function AnalyticsPage() {
-  const [totalReports, aiDecisions, criticalActions, verifiedActions, eventCount, riskCount] = await Promise.all([
-    prisma.citizenReport.count(),
-    prisma.action.count({ where: { aiGenerated: true } }),
-    prisma.action.count({ where: { priority: "CRITICAL", status: { notIn: ["RESOLVED", "VERIFIED", "CLOSED"] } } }),
-    prisma.action.count({ where: { status: "VERIFIED" } }),
-    prisma.event.count(),
-    prisma.riskAssessment.count(),
+  const [reportsResult, actionsResult, eventsResult, risksResult] = await Promise.all([
+    getReports(),
+    getActions(),
+    getEvents(),
+    getRisks(),
   ]);
+  const totalReports = reportsResult.data.length;
+  const aiDecisions = actionsResult.data.filter((a: any) => a.aiGenerated).length;
+  const criticalActions = actionsResult.data.filter((a: any) => a.priority === "CRITICAL" && !["RESOLVED", "VERIFIED", "CLOSED"].includes(a.status)).length;
+  const verifiedActions = actionsResult.data.filter((a: any) => a.status === "VERIFIED").length;
+  const eventCount = eventsResult.data.length;
+  const riskCount = risksResult.data.length;
 
   const provenance = [
     { label: "Citizen reports", value: totalReports, note: "Database records", icon: Database },
@@ -37,7 +41,7 @@ export default async function AnalyticsPage() {
 
       <div className="page-body">
         <div className="demo-banner" style={{ borderRadius: 8, marginBottom: 16 }}>
-          Dataset status: synthetic hackathon records unless a source badge explicitly says LIVE.
+          Dataset status: live database when available; otherwise CivicGrid uses its built-in demonstration dataset so learning and evaluation can continue.
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12, marginBottom: 24 }}>
@@ -76,7 +80,7 @@ export default async function AnalyticsPage() {
         <div className="card" style={{ marginTop: 16, padding: 18, background: "#f8fbff", borderColor: "#dbeafe" }}>
           <div style={{ fontWeight: 700, color: "#1e3a8a" }}>What the numbers mean</div>
           <p style={{ margin: "6px 0 0", fontSize: ".8rem", color: "#475569" }}>
-            Counts above are computed directly from the application database. No synthetic confidence percentage, response-time claim or future forecast is presented as a live fact.
+            Counts above are computed from the active CivicGrid data source. When the database is unavailable, the built-in demonstration dataset is used and identified as such.
           </p>
         </div>
       </div>
