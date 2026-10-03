@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/db";
+import { getActions } from "@/lib/resilient-data";
 import {
   PriorityBadge,
   StatusBadge,
@@ -27,7 +27,6 @@ export default async function ActionCentrePage({
   searchParams: Promise<{ priority?: string; module?: string; status?: string; dept?: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect("/login");
   if (session.user.role === "CITIZEN") redirect("/dashboard/civicgrid/report");
 
   const params = await searchParams;
@@ -43,7 +42,7 @@ export default async function ActionCentrePage({
         ? { assignedDept: session.user.department ?? "__NONE__" }
         : {};
 
-  const allActions = await prisma.action.findMany({ where: baseWhere });
+  const { data: allActions } = await getActions({ where: baseWhere });
   let actions = [...allActions];
 
   // Apply filters
