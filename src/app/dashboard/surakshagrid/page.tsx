@@ -50,7 +50,7 @@ export default async function SurakshaGridPage() {
                   <PriorityBadge priority={risk.priority} />
                 </div>
                 <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>
-                  {risk.asset?.name ?? risk.ward}
+                  {(risk as any).asset?.name ?? risk.ward}
                 </div>
                 <div style={{ fontSize: "0.8125rem", color: "#64748b", marginBottom: 8 }}>
                   Risk Score: <strong>{risk.priorityScore}</strong>/100 · {risk.populationAffected?.toLocaleString()} affected
