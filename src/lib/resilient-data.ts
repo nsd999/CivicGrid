@@ -70,14 +70,14 @@ export const DEMO_DB = {
 
 async function dbOr<T>(
   query: () => Promise<T>,
-  fallback: T,
+  fallback: any,
   label: string,
 ): Promise<{ data: T; mode: DataMode }> {
   try {
     return { data: await query(), mode: "DATABASE" };
   } catch (error) {
     console.warn("[CivicGrid] Database unavailable; using demo fallback for", label, error);
-    return { data: fallback, mode: "DEMO_FALLBACK" };
+    return { data: fallback as T, mode: "DEMO_FALLBACK" };
   }
 }
 
