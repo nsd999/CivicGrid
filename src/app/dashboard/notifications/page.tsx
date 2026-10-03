@@ -1,16 +1,12 @@
 import { requireAuth } from "@/lib/auth/guards";
-import prisma from "@/lib/db";
+import { getNotifications } from "@/lib/resilient-data";
 import { Bell } from "lucide-react";
 
 export const metadata = { title: "Notifications — CivicGrid" };
 
 export default async function NotificationsPage() {
   const session = await requireAuth();
-  const notifications = await prisma.notification.findMany({
-    where: { profileId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  const { data: notifications } = await getNotifications(session.user.id);
 
   return (
     <div>
