@@ -2,18 +2,19 @@ import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import MapComponent from "@/components/map/MapComponent";
 import { Map as MapIcon } from "lucide-react";
-import prisma from "@/lib/db";
+import { getAssets, getReports } from "@/lib/resilient-data";
 
 export const metadata = { title: "District Map — CivicGrid" };
 
 export default async function MapPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
 
-  const [assets, reports] = await Promise.all([
-    prisma.asset.findMany(),
-    prisma.citizenReport.findMany()
+  const [assetsResult, reportsResult] = await Promise.all([
+    getAssets(),
+    getReports(),
   ]);
+  const assets = assetsResult.data;
+  const reports = reportsResult.data;
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
