@@ -1,4 +1,4 @@
-import prisma from "@/lib/db";
+import { getDashboardData } from "@/lib/resilient-data";
 import {
   PriorityBadge,
   StatusBadge,
@@ -25,7 +25,7 @@ export const metadata = {
 
 export default async function DashboardPage() {
 
-  const [
+  const {
     actions,
     risks,
     events,
@@ -33,22 +33,9 @@ export default async function DashboardPage() {
     criticalCount,
     highCount,
     pendingCount,
-    resolvedTodayCount
-  ] = await Promise.all([
-    prisma.action.findMany(),
-    prisma.riskAssessment.findMany({ orderBy: { priorityScore: "desc" } }),
-    prisma.event.findMany({ orderBy: { detectedAt: "desc" } }),
-    prisma.mission.findMany({ orderBy: { startedAt: "desc" }, take: 1 }),
-    prisma.action.count({ where: { priority: "CRITICAL", status: { not: "RESOLVED" } } }),
-    prisma.action.count({ where: { priority: "HIGH", status: { not: "RESOLVED" } } }),
-    prisma.action.count({ where: { status: "ASSIGNED" } }),
-    prisma.action.count({ 
-      where: { 
-        status: "RESOLVED", 
-        updatedAt: { gte: new Date(new Date().setHours(0,0,0,0)) } 
-      } 
-    })
-  ]);
+    resolvedTodayCount,
+    mode,
+  } = await getDashboardData();
 
   const activeMission = missions[0];
   const displayName = "Administrator";
@@ -91,7 +78,7 @@ export default async function DashboardPage() {
               fontWeight: 600,
               border: "1px solid #bbf7d0",
             }}>
-              ● AI Systems Online
+              ● "+(mode === "DATABASE" ? "Live Data Connected" : "Demo Data Fallback")+"
             </span>
           </div>
         </div>
