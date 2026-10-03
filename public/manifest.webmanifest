@@ -1,0 +1,20 @@
+{
+  "name": "CivicGrid — Public Intelligence Platform",
+  "short_name": "CivicGrid",
+  "description": "Mobile-first civic intelligence, governance learning and public-service operations platform.",
+  "lang": "en-IN",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icon.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
