@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/db";
+import { getActions, getRisks, getAssets } from "@/lib/resilient-data";
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
 import { Shield, AlertTriangle } from "lucide-react";
 
@@ -8,21 +8,15 @@ export const metadata = { title: "SurakshaGrid — Disaster Risk Intelligence" }
 
 export default async function SurakshaGridPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
 
-  const [surakshaActions, surakshaRisks, bridges] = await Promise.all([
-    prisma.action.findMany({
-      where: { module: "SURAKSHAGRID" },
-      orderBy: { priority: "asc" },
-    }),
-    prisma.riskAssessment.findMany({
-      where: { module: "SURAKSHAGRID" },
-      include: { asset: true },
-    }),
-    prisma.asset.findMany({
-      where: { type: "BRIDGE" },
-    }),
+  const [actionsResult, risksResult, bridgesResult] = await Promise.all([
+    getActions({ where: { module: "SURAKSHAGRID" }, orderBy: { priority: "asc" } }),
+    getRisks({ where: { module: "SURAKSHAGRID" }, include: { asset: true } }),
+    getAssets({ where: { type: "BRIDGE" } }),
   ]);
+  const surakshaActions = actionsResult.data;
+  const surakshaRisks = risksResult.data;
+  const bridges = bridgesResult.data;
 
   return (
     <div>
