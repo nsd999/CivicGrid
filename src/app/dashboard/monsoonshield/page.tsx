@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/db";
+import { getActions, getRisks } from "@/lib/resilient-data";
 import { getWeatherData } from "@/lib/data-providers/owm";
 
 import { PriorityBadge, StatusBadge, SectionHeader, AIIndicator, StatCard } from "@/components/ui";
@@ -10,19 +10,15 @@ export const metadata = { title: "MonsoonShield — Flood & Rainfall Intelligenc
 
 export default async function MonsoonShieldPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
 
   const weatherData = await getWeatherData("Hyderabad,IN");
 
-  const monsoonActions = await prisma.action.findMany({
-    where: { module: "MONSOONSHIELD" },
-    orderBy: { priority: "asc" },
-  });
-
-  const monsoonRisks = await prisma.riskAssessment.findMany({
-    where: { module: "MONSOONSHIELD" },
-    orderBy: { priorityScore: "desc" },
-  });
+  const [actionsResult, risksResult] = await Promise.all([
+    getActions({ where: { module: "MONSOONSHIELD" }, orderBy: { priority: "asc" } }),
+    getRisks({ where: { module: "MONSOONSHIELD" }, orderBy: { priorityScore: "desc" } }),
+  ]);
+  const monsoonActions = actionsResult.data;
+  const monsoonRisks = risksResult.data;
 
   const criticalZones = monsoonRisks.filter((z) => z.priority === "CRITICAL");
   const highZones = monsoonRisks.filter((z) => z.priority === "HIGH");
