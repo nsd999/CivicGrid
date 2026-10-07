@@ -9,7 +9,7 @@ export default function MapComponent({ assets = [], reports = [] }: { assets?: a
   if (!apiKey) {
     return (
       <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9" }}>
-        Loading map configuration...
+        The map is temporarily unavailable. Please try again in a few minutes.
       </div>
     );
   }
