@@ -21,11 +21,11 @@ export const metadata = {
 };
 
 const modules = [
-  { href: "/dashboard/civicgrid", name: "CivicGrid Core", icon: BuildingIcon, tone: "#2563eb", desc: "Citizen reports, infrastructure issues and service delivery." },
-  { href: "/dashboard/surakshagrid", name: "SurakshaGrid", icon: Shield, tone: "#b91c1c", desc: "Infrastructure vulnerability and disaster preparedness." },
-  { href: "/dashboard/swasthyagrid", name: "SwasthyaGrid", icon: Activity, tone: "#15803d", desc: "Public-health capacity and supply resilience." },
-  { href: "/dashboard/monsoonshield", name: "MonsoonShield", icon: Droplets, tone: "#0e7490", desc: "Rainfall, flood exposure and drainage operations." },
-  { href: "/dashboard/heatsafe", name: "HeatSafe India", icon: Sun, tone: "#c2410c", desc: "Heat-health risk, vulnerable populations and response." },
+  { href: "/modules/civicgrid", name: "CivicGrid Core", icon: BuildingIcon, tone: "#2563eb", desc: "Citizen reports, infrastructure issues and service delivery." },
+  { href: "/modules/surakshagrid", name: "SurakshaGrid", icon: Shield, tone: "#b91c1c", desc: "Infrastructure vulnerability and disaster preparedness." },
+  { href: "/modules/swasthyagrid", name: "SwasthyaGrid", icon: Activity, tone: "#15803d", desc: "Public-health capacity and supply resilience." },
+  { href: "/modules/monsoonshield", name: "MonsoonShield", icon: Droplets, tone: "#0e7490", desc: "Rainfall, flood exposure and drainage operations." },
+  { href: "/modules/heatsafe", name: "HeatSafe India", icon: Sun, tone: "#c2410c", desc: "Heat-health risk, vulnerable populations and response." },
 ];
 
 function BuildingIcon({ size = 24, color }: { size?: number; color?: string }) {
