@@ -1,5 +1,5 @@
 import { getActions, getEvents, getRisks, getReports } from "@/lib/resilient-data";
-import { BarChart3, CheckCircle2, Database, GitBranch, ShieldCheck } from "lucide-react";
+import { BarChart3, CheckCircle2, GitBranch, ShieldCheck } from "lucide-react";
 import { StatCard } from "@/components/ui";
 
 export const metadata = { title: "Analytics & Reports — CivicGrid" };
@@ -19,7 +19,7 @@ export default async function AnalyticsPage() {
   const riskCount = risksResult.data.length;
 
   const provenance = [
-    { label: "Citizen reports", value: totalReports, note: "Database records", icon: Database },
+    { label: "Citizen reports", value: totalReports, note: "Reports received", icon: RadioIcon },
     { label: "Detected events", value: eventCount, note: "Event layer", icon: RadioIcon },
     { label: "Risk assessments", value: riskCount, note: "Priority engine", icon: ShieldCheck },
     { label: "AI-assisted actions", value: aiDecisions, note: "Human-reviewable", icon: GitBranch },
@@ -80,7 +80,7 @@ export default async function AnalyticsPage() {
         <div className="card" style={{ marginTop: 16, padding: 18, background: "#f8fbff", borderColor: "#dbeafe" }}>
           <div style={{ fontWeight: 700, color: "#1e3a8a" }}>What the numbers mean</div>
           <p style={{ margin: "6px 0 0", fontSize: ".8rem", color: "#475569" }}>
-            Counts above are computed from the active CivicGrid data source. When the database is unavailable, the built-in demonstration dataset is used and identified as such.
+            These figures help you understand what has been reported, what needs attention and what has been completed. Always check the underlying report or alert before making an important decision.
           </p>
         </div>
       </div>
