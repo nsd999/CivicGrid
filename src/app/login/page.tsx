@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
+import { signIn } from "./actions";
 
 const DEMO_CREDENTIALS = [
   { role: "Administrator", email: "admin@civicgrid.demo", password: "demo1234", description: "Full system access" },
@@ -11,42 +11,22 @@ const DEMO_CREDENTIALS = [
   { role: "Citizen", email: "citizen@civicgrid.demo", password: "demo1234", description: "Submit reports, track status" },
 ];
 
+const initialState = { error: "" };
+
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("admin@civicgrid.demo");
-  const [password, setPassword] = useState("demo1234");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const valid = DEMO_CREDENTIALS.some(
-      (cred) => cred.email === email.trim().toLowerCase() && cred.password === password
-    );
-
-    if (!valid) {
-      setLoading(false);
-      setError("Invalid demo credentials. Use one of the demo accounts below.");
-      return;
-    }
-
-    // Frontend-only demo mode: no Supabase/network call.
-    window.setTimeout(() => router.push("/dashboard"), 250);
-  }
+  const [state, formAction, pending] = useActionState(signIn, initialState);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   function fillDemo(cred: (typeof DEMO_CREDENTIALS)[0]) {
     setEmail(cred.email);
     setPassword(cred.password);
-    setError("");
   }
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc", display: "flex", flexDirection: "column" }}>
       <div className="demo-banner">
-        ⚠️ DEMO MODE — Backend authentication is temporarily disabled. CivicGrid is running as a frontend prototype.
+        🔐 Secure authentication — CivicGrid uses Supabase Auth for identity and session management. Not affiliated with or endorsed by the Government of India.
       </div>
 
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1rem" }}>
@@ -83,39 +63,39 @@ export default function LoginPage() {
               ))}
             </div>
 
-            <div style={{ marginTop: "1.5rem", padding: "12px 14px", background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, fontSize: "0.8125rem", color: "#0369a1" }}>
-              🔒 Frontend prototype — backend services can be restored later without changing the demo UI.
+            <div style={{ marginTop: "1.5rem", padding: "12px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, fontSize: "0.8125rem", color: "#166534" }}>
+              ✓ Identity is handled by Supabase Auth. CivicGrid application roles and permissions remain backed by Prisma.
             </div>
           </div>
 
           <div>
             <div className="card" style={{ padding: "2rem" }}>
-              <h2 style={{ margin: "0 0 1.5rem" }}>Enter CivicGrid</h2>
+              <h2 style={{ margin: "0 0 1.5rem" }}>Sign in to CivicGrid</h2>
 
-              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 <div>
                   <label className="label" htmlFor="email">Email address</label>
-                  <input id="email" type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter demo email" required />
+                  <input id="email" name="email" type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" required autoComplete="email" />
                 </div>
                 <div>
                   <label className="label" htmlFor="password">Password</label>
-                  <input id="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter demo password" required />
+                  <input id="password" name="password" type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required autoComplete="current-password" />
                 </div>
 
-                {error && (
+                {state.error && (
                   <div style={{ background: "#fee2e2", color: "#b91c1c", padding: "10px 12px", borderRadius: 6, fontSize: "0.875rem", border: "1px solid #fecaca" }} role="alert">
-                    {error}
+                    {state.error}
                   </div>
                 )}
 
-                <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: "100%", justifyContent: "center", padding: "10px" }}>
-                  {loading ? "Opening demo…" : "Enter Demo Dashboard"}
+                <button type="submit" className="btn btn-primary" disabled={pending} style={{ width: "100%", justifyContent: "center", padding: "10px" }}>
+                  {pending ? "Signing in…" : "Sign in securely"}
                 </button>
               </form>
 
               <div style={{ marginTop: "1.5rem" }}>
                 <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
-                  Demo accounts · password: demo1234
+                  Existing CivicGrid demo accounts · password: demo1234
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {DEMO_CREDENTIALS.map((cred) => (
