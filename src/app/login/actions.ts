@@ -21,7 +21,7 @@ export async function signIn(
   });
 
   if (error) {
-    return { error: "Invalid email or password. Please check your credentials and try again." };
+    return { error: "We couldn't sign you in. Please check your email and password and try again." };
   }
 
   redirect("/dashboard");
