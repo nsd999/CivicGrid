@@ -1,4 +1,5 @@
-import Link from "next/link";\nimport { LandingNav } from "@/components/landing-nav";
+import Link from "next/link";
+import { LandingNav } from "@/components/landing-nav";
 import {
   ArrowRight,
   Shield,
