@@ -1,17 +1,13 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { DashboardShell } from "@/components/layout/shell";
 import { getUnreadNotificationCount } from "@/lib/resilient-data";
+import { requireAuth } from "@/lib/auth/guards";
 
 export const dynamic = "force-dynamic";
 
-const DEMO_USER = {
-  id: "demo-admin",
-  name: "CivicGrid Administrator",
-  role: "ADMINISTRATOR" as const,
-};
-
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { data: unreadCount, mode } = await getUnreadNotificationCount(DEMO_USER.id);
+  const session = await requireAuth();
+  const { data: unreadCount, mode } = await getUnreadNotificationCount(session.user.id);
 
   return (
     <>
@@ -19,17 +15,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
         CivicGrid Learning & Public Intelligence Platform · {mode === "DATABASE" ? "Live operational data" : "Local demonstration dataset"} · Built for civic awareness, governance learning and exam preparation
       </div>
       <div style={{ paddingTop: 30 }}>
-    <DashboardShell
-      sidebar={
-        <Sidebar
-          userRole={DEMO_USER.role}
-          userName={DEMO_USER.name}
-          unreadNotifications={unreadCount}
-        />
-      }
-    >
-      {children}
-    </DashboardShell>
+        <DashboardShell
+          sidebar={
+            <Sidebar
+              userRole={session.user.role}
+              userName={session.user.name}
+              unreadNotifications={unreadCount}
+            />
+          }
+        >
+          {children}
+        </DashboardShell>
       </div>
     </>
   );
