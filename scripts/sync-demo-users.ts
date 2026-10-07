@@ -4,8 +4,13 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL!;
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  process.env.SUPABASE_PUBLISHABLE_KEY!;
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 const prisma = new PrismaClient();
 
@@ -22,21 +27,22 @@ async function syncDemoUsers() {
 
   for (const user of DEMO_USERS) {
     console.log(`Processing ${user.email}...`);
-    
-    // Attempt sign up
+
     let authUser;
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: user.email,
-      password: "demo1234",
-    });
+    const { data: signUpData, error: signUpError } =
+      await supabase.auth.signUp({
+        email: user.email,
+        password: "demo1234",
+      });
 
     if (signUpError) {
       if (signUpError.message.includes("already registered")) {
         console.log(`User ${user.email} already registered in Supabase. Attempting login...`);
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: user.email,
-          password: "demo1234",
-        });
+        const { data: signInData, error: signInError } =
+          await supabase.auth.signInWithPassword({
+            email: user.email,
+            password: "demo1234",
+          });
         if (signInError) {
           console.error(`Failed to login ${user.email}:`, signInError.message);
           continue;
@@ -51,14 +57,12 @@ async function syncDemoUsers() {
     }
 
     if (authUser) {
-      // Delete existing profile to avoid PK conflicts
       try {
         await prisma.profile.delete({ where: { email: user.email } });
-      } catch (e) {
-        // Ignored
+      } catch {
+        // Ignore missing profile.
       }
-      
-      // Upsert profile in Prisma with the exact UUID from Supabase Auth
+
       await prisma.profile.create({
         data: {
           id: authUser.id,
@@ -66,8 +70,9 @@ async function syncDemoUsers() {
           name: user.name,
           role: user.role as any,
           department: user.department,
-        }
+        },
       });
+
       console.log(`Successfully synced ${user.email} with UUID ${authUser.id}`);
     }
   }
