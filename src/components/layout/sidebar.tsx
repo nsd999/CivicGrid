@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
+import { signOutAction } from "@/app/auth/signout/action";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; color?: string };
 
@@ -228,7 +229,7 @@ export function Sidebar({ userRole, userName, unreadNotifications = 0 }: Sidebar
                 {userRole?.replace(/_/g, " ")}
               </div>
             </div>
-            <form action="/auth/signout" method="post">
+            <form action={signOutAction}>
               <button
                 type="submit"
                 style={{
