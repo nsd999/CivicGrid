@@ -54,8 +54,8 @@ export default function LandingPage() {
               CivicGrid connects public signals, evidence, risk assessment, human decisions and field outcomes in one traceable operating layer for safer, healthier and more resilient cities.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 28 }}>
-              <Link href="/dashboard" className="btn btn-primary btn-lg">Enter Command Centre <ArrowRight size={18} /></Link>
-              <Link href="/modules" className="btn btn-secondary btn-lg"><Siren size={18} /> View Mission Mode</Link>
+              <Link href="/modules" className="btn btn-primary btn-lg">Explore Modules <ArrowRight size={18} /></Link>
+              <Link href="/modules" className="btn btn-secondary btn-lg"><Siren size={18} /> Explore CivicGrid</Link>
             </div>
             <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 22, fontSize: ".78rem", color: "#64748b" }}>
               <span>✓ AI-assisted analysis</span>
