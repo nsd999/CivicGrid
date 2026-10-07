@@ -1,4 +1,5 @@
 import { getDashboardData } from "@/lib/resilient-data";
+import { requireAuth } from "@/lib/auth/guards";
 import {
   PriorityBadge,
   StatusBadge,
@@ -24,6 +25,7 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
+  const session = await requireAuth();
 
   const {
     actions,
@@ -38,7 +40,7 @@ export default async function DashboardPage() {
   } = await getDashboardData();
 
   const activeMission = missions[0];
-  const displayName = "Administrator";
+  const displayName = session.user.name;
 
   // Today's priorities — top 5 by priority
   const todaysPriorities = [...actions]
