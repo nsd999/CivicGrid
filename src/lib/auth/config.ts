@@ -1,28 +1,47 @@
+import { createClient } from "@/lib/supabase/server";
+import prisma from "@/lib/db";
 import type { UserRole } from "@/types";
 
 /**
- * Temporary authentication bypass.
+ * Supabase-backed authentication.
  *
- * Supabase Auth is intentionally disabled while the service is unavailable.
- * Database, AI, maps, reports, missions and other application services
- * remain enabled and continue to use their normal implementations.
- *
- * Restore the Supabase-backed implementation here when authentication
- * service is available again.
+ * Supabase owns identity and session cookies.
+ * Prisma remains the application profile/source-of-truth for CivicGrid roles,
+ * departments and active-account state.
  */
-
-const DEMO_USER = {
-  id: "demo-admin",
-  email: "admin@civicgrid.demo",
-  name: "CivicGrid Administrator",
-  role: "ADMINISTRATOR" as UserRole,
-  department: "District Administration",
-};
-
 export async function auth() {
-  return { user: DEMO_USER };
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+
+  if (error || !data?.claims?.sub) {
+    return null;
+  }
+
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { id: data.claims.sub },
+    });
+
+    if (!profile || !profile.isActive) {
+      return null;
+    }
+
+    return {
+      user: {
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        role: profile.role as UserRole,
+        department: profile.department ?? undefined,
+      },
+    };
+  } catch (err) {
+    console.error("Auth DB Error:", err);
+    return null;
+  }
 }
 
 export async function signOut() {
-  // No Supabase call while authentication is disabled.
+  const supabase = await createClient();
+  await supabase.auth.signOut();
 }
