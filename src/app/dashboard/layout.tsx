@@ -12,7 +12,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <>
       <div className="demo-banner" style={{ position: "fixed", top: 0, left: 0, right: 0 }}>
-        CivicGrid Learning & Public Intelligence Platform · {mode === "DATABASE" ? "Live operational data" : "Local demonstration dataset"} · Built for civic awareness, governance learning and exam preparation
+        CivicGrid · Your civic information, learning and action platform
       </div>
       <div style={{ paddingTop: 30 }}>
         <DashboardShell
