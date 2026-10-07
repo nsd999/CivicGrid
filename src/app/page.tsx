@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "next/link";\nimport { LandingNav } from "@/components/landing-nav";
 import {
   ArrowRight,
   Shield,
@@ -38,24 +38,7 @@ export default function LandingPage() {
         CivicGrid · Learning + Public Intelligence Platform · Built for civic awareness, governance learning and civil-services / civic-exam preparation · Not an official government application
       </div>
 
-      <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "14px clamp(18px, 5vw, 64px)", background: "rgba(255,255,255,.96)",
-        borderBottom: "1px solid #e2e8f0", position: "sticky", top: 0, zIndex: 30,
-        backdropFilter: "blur(12px)",
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <img src="/logo.jpg" alt="CivicGrid" style={{ width: 38, height: 38, borderRadius: 9, objectFit: "cover" }} />
-          <div>
-            <div style={{ fontWeight: 800, fontSize: "1.05rem", color: "#0f172a" }}>CivicGrid</div>
-            <div style={{ fontSize: "0.67rem", color: "#64748b", letterSpacing: ".04em" }}>PUBLIC INTELLIGENCE PLATFORM</div>
-          </div>
-        </Link>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <Link href="#modules" className="btn btn-secondary btn-sm">Modules</Link>
-          <Link href="/dashboard" className="btn btn-primary btn-sm">Open Command Centre <ArrowRight size={15} /></Link>
-        </div>
-      </nav>
+      <LandingNav />
 
       <main>
         <section className="landing-hero">
@@ -72,7 +55,7 @@ export default function LandingPage() {
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 28 }}>
               <Link href="/dashboard" className="btn btn-primary btn-lg">Enter Command Centre <ArrowRight size={18} /></Link>
-              <Link href="/dashboard/missions" className="btn btn-secondary btn-lg"><Siren size={18} /> View Mission Mode</Link>
+              <Link href="/modules" className="btn btn-secondary btn-lg"><Siren size={18} /> View Mission Mode</Link>
             </div>
             <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 22, fontSize: ".78rem", color: "#64748b" }}>
               <span>✓ AI-assisted analysis</span>
