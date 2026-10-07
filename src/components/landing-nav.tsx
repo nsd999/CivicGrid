@@ -24,7 +24,7 @@ export function LandingNav() {
 
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <Link href="#modules" className="btn btn-secondary btn-sm">Modules</Link>
-        <Link href="/dashboard" className="btn btn-primary btn-sm">Open Command Centre</Link>
+        <Link href="/modules" className="btn btn-primary btn-sm">Explore Modules</Link>
         <button
           type="button"
           onClick={() => setOpen(!open)}
