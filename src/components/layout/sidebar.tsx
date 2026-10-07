@@ -31,7 +31,7 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
     items: [
       { href: "/dashboard", label: "Home", icon: LayoutDashboard },
       { href: "/dashboard/action-centre", label: "Action Centre", icon: Zap },
-      { href: "/dashboard/map", label: "Map", icon: Map },
+      { href: "/dashboard/map", label: "Map", icon: Map },\n      { href: "/dashboard/learning", label: "Learning Hub", icon: BookOpen, color: "#7c3aed" },
     ],
   },
   {
