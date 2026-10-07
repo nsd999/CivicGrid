@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await requireAuth();
-  const { data: unreadCount, mode } = await getUnreadNotificationCount(session.user.id);
+  const { data: unreadCount } = await getUnreadNotificationCount(session.user.id);
 
   return (
     <>
