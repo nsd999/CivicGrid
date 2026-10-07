@@ -36,7 +36,6 @@ export default async function DashboardPage() {
     highCount,
     pendingCount,
     resolvedTodayCount,
-    mode,
   } = await getDashboardData();
 
   const activeMission = missions[0];
@@ -73,14 +72,14 @@ export default async function DashboardPage() {
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <span style={{
               fontSize: "0.75rem",
-              color: "#15803d",
-              background: "#dcfce7",
-              padding: "4px 10px",
-              borderRadius: 4,
+              color: "#475569",
+              background: "#f8fafc",
+              padding: "5px 10px",
+              borderRadius: 999,
               fontWeight: 600,
-              border: "1px solid #bbf7d0",
+              border: "1px solid #e2e8f0",
             }}>
-              ● {mode === "DATABASE" ? "Live Data Connected" : "Demo Data Fallback"}
+              Hyderabad District
             </span>
           </div>
         </div>
