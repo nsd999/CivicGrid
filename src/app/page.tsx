@@ -2,53 +2,5 @@ import Link from "next/link";
 import { ArrowRight, Bell, ChevronRight, CloudRain, HeartPulse, MapPin, Shield, Sun, Building2, Clock3 } from "lucide-react";
 import { CivicShell } from "@/components/civic/civic-shell";
 import { LocationPicker } from "@/components/civic/location-picker";
-
-const services = [
-  { slug:"swasthya", title:"Swasthya Grid", desc:"Health facilities, public-health support and nearby care.", icon:HeartPulse, tone:"green" },
-  { slug:"suraksha", title:"Suraksha Grid", desc:"Safety services, emergency support and local risk.", icon:Shield, tone:"red" },
-  { slug:"monsoon", title:"Monsoon Shield", desc:"Rainfall, flooding and drainage information.", icon:CloudRain, tone:"blue" },
-  { slug:"heat", title:"Heat Safe India", desc:"Heat risk, cooling support and safety guidance.", icon:Sun, tone:"amber" },
-  { slug:"civic", title:"Civic Services", desc:"Everyday public services and local civic issues.", icon:Building2, tone:"navy" },
-];
-
-export default function Home() {
-  return <CivicShell>
-    <section className="home-hero">
-      <div className="home-hero-inner">
-        <div className="hero-copy">
-          <span className="eyebrow"><Shield size={15}/> Citizen service portal</span>
-          <h1>Your City. <span>One Civic Platform.</span></h1>
-          <p>Find the right civic service, understand what is happening around you, and take the next step without navigating a complicated dashboard.</p>
-        </div>
-        <LocationPicker />
-      </div>
-    </section>
-
-    <section className="portal-section">
-      <div className="section-heading"><div><span className="eyebrow">Start a service</span><h2>What do you need today?</h2></div><Link href="/services" className="section-link">View all <ArrowRight size={16}/></Link></div>
-      <div className="service-grid">
-        {services.map(({slug,title,desc,icon:Icon,tone})=><Link href={"/services/"+slug} className="service-card" key={slug}>
-          <div className={"service-icon "+tone}><Icon size={23}/></div>
-          <div className="service-card-copy"><h3>{title}</h3><p>{desc}</p></div>
-          <ChevronRight size={20} className="service-arrow"/>
-        </Link>)}
-      </div>
-    </section>
-
-    <section className="portal-section compact-section">
-      <div className="section-heading"><div><span className="eyebrow">Around you</span><h2>What is happening now?</h2></div><Link href="/alerts" className="section-link">All alerts <ArrowRight size={16}/></Link></div>
-      <div className="alert-preview">
-        <div className="alert-preview-main"><span className="severity-chip warning">Warning</span><h3>Heavy rainfall may affect low-lying areas</h3><p>Check local rainfall and drainage conditions before travelling.</p><div className="meta-row"><span><MapPin size={14}/> Hyderabad</span><span><Clock3 size={14}/> Updated 12 min ago</span></div></div>
-        <Link href="/alerts" className="alert-preview-action"><Bell size={18}/> View alerts</Link>
-      </div>
-    </section>
-
-    <section className="trust-strip">
-      <div><Shield size={20}/><div><strong>Built for public use</strong><span>Clear sources, status indicators and update times.</span></div></div>
-      <div><Clock3 size={20}/><div><strong>Live when available</strong><span>Data freshness is shown instead of being hidden.</span></div></div>
-      <div><MapPin size={20}/><div><strong>Location aware</strong><span>Choose a city or locality to make results relevant.</span></div></div>
-    </section>
-
-    <footer className="civic-footer">CivicGrid is a public-sector technology concept and is not an official Government of India application.</footer>
-  </CivicShell>;
-}
+const services=[["swasthya","Swasthya Grid","Health facilities, public-health support and nearby care.",HeartPulse,"green"],["suraksha","Suraksha Grid","Safety services, emergency support and local risk.",Shield,"red"],["monsoon","Monsoon Shield","Rainfall, flooding and drainage information.",CloudRain,"blue"],["heat","Heat Safe India","Heat risk, cooling support and safety guidance.",Sun,"amber"],["civic","Civic Services","Everyday public services and local civic issues.",Building2,"navy"]] as const;
+export default function Home(){return <CivicShell><section className="home-hero"><div className="home-hero-inner"><div className="hero-copy"><span className="eyebrow"><Shield size={15}/> Citizen service portal</span><h1>Your City. <span>One Civic Platform.</span></h1><p>Find the right civic service, understand what is happening around you, and take the next step without navigating a complicated dashboard.</p></div><LocationPicker/></div></section><section className="portal-section"><div className="section-heading"><div><span className="eyebrow">Start a service</span><h2>What do you need today?</h2></div><Link href="/services" className="section-link">View all <ArrowRight size={16}/></Link></div><div className="service-grid">{services.map(([slug,title,desc,Icon,tone])=><Link href={"/services/"+slug} className="service-card" key={slug}><div className={"service-icon "+tone}><Icon size={23}/></div><div className="service-card-copy"><h3>{title}</h3><p>{desc}</p></div><ChevronRight size={20} className="service-arrow"/></Link>)}</div></section><section className="portal-section compact-section"><div className="section-heading"><div><span className="eyebrow">Around you</span><h2>What is happening now?</h2></div><Link href="/alerts" className="section-link">All alerts <ArrowRight size={16}/></Link></div><div className="alert-preview"><div className="alert-preview-main"><span className="severity-chip warning">Warning</span><h3>Heavy rainfall may affect low-lying areas</h3><p>Check local rainfall and drainage conditions before travelling.</p><div className="meta-row"><span><MapPin size={14}/> Hyderabad</span><span><Clock3 size={14}/> Updated 12 min ago</span></div></div><Link href="/alerts" className="alert-preview-action"><Bell size={18}/> View alerts</Link></div></section><section className="trust-strip"><div><Shield size={20}/><div><strong>Built for public use</strong><span>Clear sources, status indicators and update times.</span></div></div><div><Clock3 size={20}/><div><strong>Live when available</strong><span>Data freshness is shown instead of being hidden.</span></div></div><div><MapPin size={20}/><div><strong>Location aware</strong><span>Choose a city or locality to make results relevant.</span></div></div></section><footer className="civic-footer">CivicGrid is a public-sector technology concept and is not an official Government of India application.</footer></CivicShell>}
