@@ -10,10 +10,10 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CivicGrid — See. Understand. Prioritise. Act.",
-  description: "AI-powered public intelligence platform for safer, healthier and more resilient communities. Designed for public-sector deployment.",
+  title: "CivicGrid — Your City. One Civic Platform.",
+  description: "A citizen-first civic service platform for finding local services, understanding alerts and taking the next action.",
   keywords: ["civic intelligence","public infrastructure","disaster management","flood risk","heat risk","public health","smart city","India"],
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
   applicationName: "CivicGrid",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "CivicGrid" },
@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0f172a",
+  themeColor: "#174ea6",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
